@@ -21,8 +21,8 @@ public class Share {
 
   public Share(BigDecimal quantity, BigDecimal purchasePrice) {
     // this.stock = stock;
-    this.quantity = BigDecimal.ZERO;
-    this.purchasePrice = BigDecimal.ZERO;
+    this.quantity = quantity;
+    this.purchasePrice = purchasePrice;
 
   }
 
