@@ -1,4 +1,4 @@
-package edu.ntnu.idi.bidata.group_5;
+package edu.ntnu.idi.bidata.group5;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
