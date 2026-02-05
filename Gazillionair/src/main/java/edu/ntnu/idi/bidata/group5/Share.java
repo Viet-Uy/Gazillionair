@@ -7,8 +7,7 @@ import java.math.BigDecimal;
  */
 public class Share {
 
-  // Stock stock;
-
+  Stock stock;
   BigDecimal quantity;
   BigDecimal purchasePrice;
 
@@ -19,14 +18,16 @@ public class Share {
    * @param purchasePrice price at the moment of purchase.
    */
 
-  public Share(BigDecimal quantity, BigDecimal purchasePrice) {
-    // this.stock = stock;
+  public Share(Stock stock, BigDecimal quantity, BigDecimal purchasePrice) {
+    this.stock = stock;
     this.quantity = quantity;
     this.purchasePrice = purchasePrice;
 
   }
 
-  // public Stock getStock
+  public Stock getStock() {
+    return stock;
+  }
 
   public BigDecimal getQuantity() {
     return quantity;
