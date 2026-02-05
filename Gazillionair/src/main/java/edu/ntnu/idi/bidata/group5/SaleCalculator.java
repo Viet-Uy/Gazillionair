@@ -2,14 +2,25 @@ package edu.ntnu.idi.bidata.group5;
 
 import java.math.BigDecimal;
 
-abstract class SaleCalculator implements TransactionCalculator {
+/**
+ * SaleCalculator class implements TransactionCalculator interface
+ * to perform calculations related to stock sales.
+ */
+public class SaleCalculator implements TransactionCalculator {
 
-  private final Share share;
+  BigDecimal purchasePrice;
   BigDecimal salesPrice;
   BigDecimal quantity;
 
+  /**
+   * Constructor and initializing variables from Share class.
+   *
+   * @param share to access share class.
+   */
   public SaleCalculator(Share share) {
-    this.share = share;
+    this.purchasePrice = share.getPurchasePrice();
+    this.salesPrice = share.getStock().getSalesPrice();
+    this.quantity = share.getQuantity();
   }
 
   @Override
@@ -24,7 +35,7 @@ abstract class SaleCalculator implements TransactionCalculator {
 
   @Override
   public BigDecimal calculateTax() {
-    BigDecimal purchaseCost = share.purchasePrice.multiply(quantity);
+    BigDecimal purchaseCost = purchasePrice.multiply(quantity);
     return calculateGross().subtract(calculateCommission().subtract(purchaseCost));
   }
 
