@@ -2,19 +2,27 @@ package edu.ntnu.idi.bidata.group5;
 
 import java.math.BigDecimal;
 
-abstract class PurchaseCalculator implements TransactionCalculator {
+/**
+ * Calculator for when the user is purchasing.
+ */
+public class PurchaseCalculator implements TransactionCalculator {
 
-  private final Share share;
   BigDecimal purchasePrice;
   BigDecimal quantity;
 
+  /**
+   * Initializing share to get access to its functions.
+   *
+   * @param share to get access to the share prices and quantity.
+   */
   public PurchaseCalculator(Share share) {
-    this.share = share;
+    this.purchasePrice = share.getPurchasePrice();
+    this.quantity = share.getQuantity();
   }
 
   @Override
   public BigDecimal calculateGross() {
-    return share.getPurchasePrice().multiply(share.getQuantity()); /*Gross*/
+    return purchasePrice.multiply(quantity); /*Gross*/
   }
 
   @Override
