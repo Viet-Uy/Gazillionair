@@ -1,6 +1,7 @@
 package edu.ntnu.idi.bidata.group5;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,9 +13,10 @@ public class Portfolio {
 
   /**
    * Constructor for Portfolio.
+   * Contains Arraylist of shares.
    */
   public Portfolio() {
-
+    this.shares = new ArrayList<>();
   }
 
   /**
@@ -70,12 +72,12 @@ public class Portfolio {
    *
    * @return the total value of the portfolio as a {@link BigDecimal}
    */
-  public BigDecimal getTotalPrice() {
-    BigDecimal totalPrice = BigDecimal.ZERO;
+  public BigDecimal getTotalValue() {
+    BigDecimal totalValue = BigDecimal.ZERO;
     for (Share share : shares) {
       BigDecimal value = share.getStock().getSalesPrice().multiply(share.getQuantity());
-      totalPrice = totalPrice.add(value);
+      totalValue = totalValue.add(value);
     }
-    return totalPrice;
+    return totalValue;
   }
 }
