@@ -1,5 +1,6 @@
 package edu.ntnu.idi.bidata.group5;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -60,4 +61,21 @@ public class Portfolio {
     return shares.contains(share);
   }
 
+  /**
+   * Calculates the total value of all shares in the portfolio.
+   * The total value is computed by iterating through each {@link Share}
+   * in the portfolio and multiplying the share's quantity by the stock's
+   * current sales price. All individual values are then summed using
+   * {@link java.math.BigDecimal} arithmetic to ensure precision.
+   *
+   * @return the total value of the portfolio as a {@link BigDecimal}
+   */
+  public BigDecimal getTotalPrice() {
+    BigDecimal totalPrice = BigDecimal.ZERO;
+    for (Share share : shares) {
+      BigDecimal value = share.getStock().getSalesPrice().multiply(share.getQuantity());
+      totalPrice = totalPrice.add(value);
+    }
+    return totalPrice;
+  }
 }
