@@ -31,4 +31,17 @@ class StockTest {
     BigDecimal updated = stock.addNewSalesPrice(BigDecimal.valueOf(150));
     assertEquals(BigDecimal.valueOf(150), updated);
   }
+
+  @Test
+  void getSymbolReturnsCorrectSymbol() {
+    Stock stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
+    assertEquals("AAPL", stock.getSymbol());
+  }
+
+  @Test
+  void getCompanyReturnsCorrectCompany() {
+    Stock stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
+    assertEquals("Apple", stock.getCompany());
+  }
+
 }
