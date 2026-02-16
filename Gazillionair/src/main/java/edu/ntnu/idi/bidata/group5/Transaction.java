@@ -1,5 +1,7 @@
 package edu.ntnu.idi.bidata.group5;
 
+import java.math.BigDecimal;
+
 /**
  * Abstract class representing a transaction, either buy or sell.
  */
@@ -8,7 +10,7 @@ public abstract class Transaction {
   Share share;
   int week;
   TransactionCalculator calculator;
-  boolean committed;
+  protected boolean committed;
 
   /**
    * This constructor initializes the transaction with the given share, week, and calculator.
@@ -45,12 +47,6 @@ public abstract class Transaction {
    *
    * @throws IllegalStateException if the transaction has already been committed
    */
-  public void commit(/*Player player*/) {
-    if (committed) {
-      throw new IllegalStateException("Transaction has already been committed.");
-    }
-    // Implement the logic to update the player's portfolio and cash balance based on the transaction type.
-    committed = true;
-  }
+  public abstract void commit(Player player);
 
 }
