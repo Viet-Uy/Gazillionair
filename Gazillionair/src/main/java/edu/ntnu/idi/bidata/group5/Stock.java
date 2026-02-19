@@ -30,10 +30,23 @@ public class Stock {
    * @param salesPrice the initial sales price of the stock
    */
   public Stock(String symbol, String company, BigDecimal salesPrice) {
+
+    if (symbol == null || symbol.isEmpty()) {
+      throw new IllegalArgumentException("Stock symbol cannot be null or empty");
+    }
+    if (company == null || company.isEmpty()) {
+      throw new IllegalArgumentException("Company name cannot be null or empty");
+    }
+    if (salesPrice == null || salesPrice.compareTo(BigDecimal.ZERO) <= 0){
+      throw new IllegalArgumentException("Sales price must be greater than zero");
+    }
+
     this.symbol = symbol;
     this.company = company;
     prices = new ArrayList<>();
     prices.add(salesPrice);
+
+
   }
 
   /**
@@ -62,6 +75,9 @@ public class Stock {
    * @return the current sales price
    */
   public BigDecimal getSalesPrice() {
+    if (prices.isEmpty()) {
+      throw new IllegalStateException("Price history is empty");
+    }
     return prices.get(prices.size() - 1);
   }
 
@@ -72,6 +88,9 @@ public class Stock {
    * @return the updated current sales price
    */
   public BigDecimal addNewSalesPrice(BigDecimal newPrice) {
+    if (newPrice == null || newPrice.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("New price must be greater than zero");
+    }
     prices.add(newPrice);
     return getSalesPrice();
   }

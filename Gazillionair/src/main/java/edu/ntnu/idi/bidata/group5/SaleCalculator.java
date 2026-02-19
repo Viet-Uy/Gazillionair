@@ -18,6 +18,10 @@ public class SaleCalculator implements TransactionCalculator {
    * @param share to access share class.
    */
   public SaleCalculator(Share share) {
+    if (share == null) {
+      throw new IllegalArgumentException("Share cannot be null");
+    }
+
     this.purchasePrice = share.getPurchasePrice();
     this.salesPrice = share.getStock().getSalesPrice();
     this.quantity = share.getQuantity();
@@ -37,7 +41,7 @@ public class SaleCalculator implements TransactionCalculator {
   public BigDecimal calculateTax() {
     BigDecimal purchaseCost = purchasePrice.multiply(quantity);
     BigDecimal profit = calculateGross().subtract(calculateCommission()).subtract(purchaseCost);
-    return profit.multiply(BigDecimal.valueOf(0.30));
+    return BigDecimal.ZERO.max(profit).multiply(BigDecimal.valueOf(0.30));
   }
 
   @Override
