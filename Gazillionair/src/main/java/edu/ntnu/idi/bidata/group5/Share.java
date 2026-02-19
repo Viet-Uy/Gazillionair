@@ -23,6 +23,16 @@ public class Share {
     this.quantity = quantity;
     this.purchasePrice = purchasePrice;
 
+    if (stock == null) {
+      throw new IllegalArgumentException("Stock cannot be null.");
+    }
+    if (quantity == null ||quantity.compareTo(BigDecimal.ZERO) <= 0 ) {
+      throw new IllegalArgumentException("Quantity must be greater than zero.");
+    }
+    if ( purchasePrice == null || purchasePrice.compareTo(BigDecimal.ZERO) <= 0) {
+        throw new IllegalArgumentException("Purchase price must be greater than zero.");
+    }
+
   }
 
   public Stock getStock() {
