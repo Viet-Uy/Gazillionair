@@ -20,7 +20,7 @@ public class Share {
 
   public Share(Stock stock, BigDecimal quantity, BigDecimal purchasePrice) {
     if (stock == null) {
-      throw new IllegalArgumentException("Stock cannot be null.");git checkout
+      throw new IllegalArgumentException("Stock cannot be null.");g
     }
     if (quantity == null ||quantity.compareTo(BigDecimal.ZERO) <= 0 ) {
       throw new IllegalArgumentException("Quantity must be greater than zero.");
