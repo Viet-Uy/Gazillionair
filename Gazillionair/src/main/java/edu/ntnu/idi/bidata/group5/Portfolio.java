@@ -26,6 +26,9 @@ public class Portfolio {
    * @return true if the share was added, false otherwise
    */
   public boolean addShare(Share share) {
+    if (share == null) {
+      throw new IllegalArgumentException("Share cannot be null");
+    }
     return shares.add(share);
   }
 
@@ -36,6 +39,10 @@ public class Portfolio {
    * @return true if the share was removed, false otherwise
    */
   public boolean removeShare(Share share) {
+    if (share == null) {
+      throw new IllegalArgumentException("Share cannot be null");
+    }
+
     return shares.remove(share);
   }
 
@@ -50,7 +57,14 @@ public class Portfolio {
    * @return returning shares, TBD
    */
   public List<Share> getShares(String symbol) {
-    return shares;
+
+    if (symbol == null || symbol.isEmpty()) {
+      throw new IllegalArgumentException("Stock symbol cannot be null or empty");
+    }
+    return shares.stream()
+        .filter(share -> share.getStock().getSymbol().equals(symbol))
+        .toList();
+
   }
 
   /**
@@ -60,6 +74,10 @@ public class Portfolio {
    * @return true if the portfolio contains the share, false otherwise
    */
   public boolean contains(Share share) {
+
+    if (share == null) {
+      throw new IllegalArgumentException("Share cannot be null");
+    }
     return shares.contains(share);
   }
 

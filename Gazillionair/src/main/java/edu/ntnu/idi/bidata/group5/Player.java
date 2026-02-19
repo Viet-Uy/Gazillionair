@@ -84,6 +84,9 @@ public class Player {
    * @return the updated balance
    */
   public BigDecimal addMoney(BigDecimal money) {
+    if (money == null || money.compareTo(BigDecimal.ZERO) < 0) {
+      throw new IllegalArgumentException("Money to add cannot be null or negative");
+    }
     this.money = this.money.add(money);
     return this.money;
   }
@@ -95,6 +98,9 @@ public class Player {
    * @return the updated balance
    */
   public BigDecimal withdrawMoney(BigDecimal money) {
+    if (money == null || money.compareTo(BigDecimal.ZERO) < 0) {
+      throw new IllegalArgumentException("Money to withdraw cannot be null or negative");
+    }
     this.money = this.money.subtract(money);
     return this.money;
   }

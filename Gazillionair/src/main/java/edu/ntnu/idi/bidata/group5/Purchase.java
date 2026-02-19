@@ -20,6 +20,10 @@ public class Purchase extends Transaction {
   @Override
   public void commit(Player player) {
 
+    if (player == null) {
+      throw new IllegalArgumentException("Player cannot be null.");
+    }
+
     if (isCommitted()) {
       throw new IllegalStateException("Transaction already committed.");
     }
