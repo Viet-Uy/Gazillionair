@@ -25,7 +25,7 @@ public class Exchange {
   private final String name;
 
   /** Map of stocks indexed by their unique symbol. */
-  private final Map<String, Stock> stocksBySymbol;
+  private final Map<String, Stock> stockMap;
 
   /** Random generator used for price changes. */
   private final Random random;
@@ -43,28 +43,28 @@ public class Exchange {
    * if the stock list is {@code null}, or if duplicate stock symbols are provided
    */
   public Exchange(String name, List<Stock> stocks) {
-    if (name == null || name.isBlank()) {
-      throw new IllegalArgumentException("Exchange name cannot be null or blank");
-    }
-    if (stocks == null) {
-      throw new IllegalArgumentException("Stocks list cannot be null");
-    }
+
 
     this.name = name;
     this.week = 1;
     this.random = new Random();
-    this.stocksBySymbol = new HashMap<>();
+    this.stockMap = new HashMap<>();
+
+    if (name == null || name.isBlank() || !name.matches("[A-Za-z ]+")) {
+      throw new IllegalArgumentException("Exchange name is invalid");
+    }
 
     for (Stock stock : stocks) {
       if (stock == null) {
         throw new IllegalArgumentException("Stock in list cannot be null");
       }
       String symbol = stock.getSymbol();
-      if (stocksBySymbol.containsKey(symbol)) {
+      if (stockMap.containsKey(symbol)) {
         throw new IllegalArgumentException("Duplicate stock symbol: " + symbol);
       }
-      stocksBySymbol.put(symbol, stock);
+      stockMap.put(symbol, stock);
     }
+
   }
 
   /**
@@ -74,6 +74,7 @@ public class Exchange {
    */
   public String getName() {
     return name;
+
   }
 
   /**
@@ -97,7 +98,7 @@ public class Exchange {
     if (symbol == null || symbol.isBlank()) {
       throw new IllegalArgumentException("Symbol cannot be null or blank");
     }
-    Stock stock = stocksBySymbol.get(symbol);
+    Stock stock = stockMap.get(symbol);
     if (stock == null) {
       throw new IllegalArgumentException("No stock found with symbol: " + symbol);
     }
@@ -119,7 +120,7 @@ public class Exchange {
     String k = keyword.toLowerCase().trim();
     List<Stock> matches = new ArrayList<>();
 
-    for (Stock stock : stocksBySymbol.values()) {
+    for (Stock stock : stockMap.values()) {
       if (stock.getSymbol().toLowerCase().contains(k)
               || stock.getCompany().toLowerCase().contains(k)) {
         matches.add(stock);
@@ -136,7 +137,7 @@ public class Exchange {
   public void advance() {
     week++;
 
-    for (Stock stock : stocksBySymbol.values()) {
+    for (Stock stock : stockMap.values()) {
       BigDecimal current = stock.getSalesPrice();
       BigDecimal newPrice = applyRandomChange(current);
       stock.addNewSalesPrice(newPrice);

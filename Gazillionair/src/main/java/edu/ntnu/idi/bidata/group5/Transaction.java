@@ -20,6 +20,16 @@ public abstract class Transaction {
    * @param calculator the calculator to compute the transaction details
    */
   protected Transaction(Share share, int week, TransactionCalculator calculator) {
+    if (share == null) {
+      throw new IllegalArgumentException("Share cannot be null");
+    }
+    if (week < 1) {
+      throw new IllegalArgumentException("Week cannot be negative");
+    }
+    if (calculator == null) {
+      throw new IllegalArgumentException("Calculator cannot be null");
+    }
+
     this.share = share;
     this.week = week;
     this.calculator = calculator;

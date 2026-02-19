@@ -23,6 +23,10 @@ public class Sale  extends Transaction {
    * @param player the player committing the sale
    */
   public void commit(Player player) {
+    if (player == null) {
+      throw new IllegalArgumentException("Player cannot be null.");
+    }
+
     if (isCommitted()) {
       throw new IllegalStateException("Transaction already committed.");
     }
