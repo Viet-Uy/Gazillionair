@@ -44,4 +44,34 @@ class StockTest {
     assertEquals("Apple", stock.getCompany());
   }
 
+  // Negative test cases for constructor
+
+  @Test
+  void constructorThrowsExceptionSymbol() {
+    assertThrows(IllegalArgumentException.class, () -> new Stock(null, "Apple", BigDecimal.valueOf(100)));
+    assertThrows(IllegalArgumentException.class, () -> new Stock("", "Apple", BigDecimal.valueOf(100)));
+  }
+
+  @Test
+  void constructorThrowsExceptionCompany() {
+    assertThrows(IllegalArgumentException.class, () -> new Stock("AAPL", null, BigDecimal.valueOf(100)));
+    assertThrows(IllegalArgumentException.class, () -> new Stock("AAPL", "", BigDecimal.valueOf(100)));
+  }
+
+  @Test
+  void constructorThrowsExceptionSalesPrice() {
+    assertThrows(IllegalArgumentException.class, () -> new Stock("AAPL", "Apple", null));
+    assertThrows(IllegalArgumentException.class, () -> new Stock("AAPL", "Apple", BigDecimal.valueOf(-1)));
+    assertThrows(IllegalArgumentException.class, () -> new Stock("AAPL", "Apple", BigDecimal.ZERO));
+  }
+
+  @Test
+  void addNewSalesPriceThrowsException() {
+    Stock stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
+    assertThrows(IllegalArgumentException.class, () -> stock.addNewSalesPrice(null));
+    assertThrows(IllegalArgumentException.class, () -> stock.addNewSalesPrice(BigDecimal.valueOf(-1)));
+    assertThrows(IllegalArgumentException.class, () -> stock.addNewSalesPrice(BigDecimal.ZERO));
+  }
+
+
 }
