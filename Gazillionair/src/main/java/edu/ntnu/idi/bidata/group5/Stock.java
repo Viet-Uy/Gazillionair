@@ -78,7 +78,7 @@ public class Stock {
     if (prices.isEmpty()) {
       throw new IllegalStateException("Price history is empty");
     }
-    return prices.get(prices.size() - 1);
+    return prices.getLast();
   }
 
   /**

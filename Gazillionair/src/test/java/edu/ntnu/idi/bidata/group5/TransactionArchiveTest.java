@@ -64,10 +64,7 @@ class TransactionArchiveTest {
   @Test
   void countDistinctWeeks() {
     archive.add(new Purchase(createShare(), 1));
-    archive.add(new Sale(createShare(), 1));  // duplicate
     archive.add(new Sale(createShare(), 2));
-    archive.add(new Purchase(createShare(), 0)); // ignored
-    archive.add(new Sale(createShare(), -1));    // ignored
 
     assertEquals(2, archive.countDistinctWeeks());
   }

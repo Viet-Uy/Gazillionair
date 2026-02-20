@@ -61,8 +61,14 @@ public class Portfolio {
     if (symbol == null || symbol.isEmpty()) {
       throw new IllegalArgumentException("Stock symbol cannot be null or empty");
     }
+
+
     return shares.stream()
-        .filter(share -> share.getStock().getSymbol().equals(symbol))
+        .filter(share ->
+                share.getStock()
+                .getSymbol()
+                .equals(symbol)
+        )
         .toList();
 
   }
@@ -74,7 +80,6 @@ public class Portfolio {
    * @return true if the portfolio contains the share, false otherwise
    */
   public boolean contains(Share share) {
-
     if (share == null) {
       throw new IllegalArgumentException("Share cannot be null");
     }
