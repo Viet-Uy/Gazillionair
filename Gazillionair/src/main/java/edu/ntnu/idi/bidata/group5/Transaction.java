@@ -24,7 +24,7 @@ public abstract class Transaction {
       throw new IllegalArgumentException("Share cannot be null");
     }
     if (week < 1) {
-      throw new IllegalArgumentException("Week cannot be negative");
+      throw new IllegalArgumentException("Week must be at least 1");
     }
     if (calculator == null) {
       throw new IllegalArgumentException("Calculator cannot be null");
