@@ -3,6 +3,7 @@ package edu.ntnu.idi.bidata.group5;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,8 +17,7 @@ class PortfolioTest {
             BigDecimal.valueOf(100)
     );
     Portfolio portfolio = new Portfolio();
-    portfolio.addShare(share);
-    assertTrue(portfolio.getShares().contains(share));
+    assertTrue(portfolio.addShare(share));
   }
 
   @Test
@@ -30,8 +30,7 @@ class PortfolioTest {
     Portfolio portfolio = new Portfolio();
     portfolio.addShare(share);
     assertTrue(portfolio.getShares().contains(share));
-    portfolio.removeShare(share);
-    assertFalse(portfolio.getShares().contains(share));
+    assertTrue(portfolio.removeShare(share));
   }
 
   @Test
@@ -74,6 +73,66 @@ class PortfolioTest {
   }
 
   @Test
+  void getMultipleSharesBySymbolSuccessfully() {
+    Share share1 = new Share(new Stock("AAPL","Apple",
+            BigDecimal.valueOf(110)),
+            BigDecimal.valueOf(10),
+            BigDecimal.valueOf(100));
+
+    Share share2 = new Share(new Stock("AAPL","Apple",
+            BigDecimal.valueOf(120)),
+            BigDecimal.valueOf(15),
+            BigDecimal.valueOf(110));
+
+    Portfolio portfolio = new Portfolio();
+    portfolio.addShare(share1);
+    portfolio.addShare(share2);
+    List<Share> results = portfolio.getShares("AAPL");
+    assertEquals(2, results.size());
+  }
+
+  @Test
   void contains() {
+    Share share = new Share(new Stock("AAPL","Apple", BigDecimal.valueOf(110)),BigDecimal.valueOf(10),
+            BigDecimal.valueOf(100));
+
+    Portfolio portfolio = new Portfolio();
+    portfolio.addShare(share);
+    assertTrue(portfolio.contains(share));
+
+  }
+
+  //Negative tests below
+
+  @Test
+  void addShareThrowsException() {
+    Portfolio portfolio = new Portfolio();
+    assertThrows(IllegalArgumentException.class, () -> portfolio.addShare(null));
+  }
+
+  @Test
+  void removeShareThrowsException() {
+    Portfolio portfolio = new Portfolio();
+    assertThrows(IllegalArgumentException.class, () -> portfolio.removeShare(null));
+  }
+
+  @Test
+    void getShareBySymbolSuccessfully() {
+    Share share1 = new Share(new Stock("AAPL","Apple",
+            BigDecimal.valueOf(110)),
+            BigDecimal.valueOf(10),
+            BigDecimal.valueOf(100));
+    Portfolio portfolio = new Portfolio();
+    portfolio.addShare(share1);
+    List<Share> results = portfolio.getShares("AAPL");
+    assertEquals(1, results.size());
+    assertEquals("AAPL", results.getFirst().getStock().getSymbol());
+  }
+
+  @Test
+    void getSharesBySymbolThrowsException() {
+    Portfolio portfolio = new Portfolio();
+    assertThrows(IllegalArgumentException.class, () -> portfolio.getShares(null));
+    assertThrows(IllegalArgumentException.class, () -> portfolio.getShares(""));
   }
 }
