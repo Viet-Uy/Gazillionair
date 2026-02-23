@@ -8,9 +8,9 @@ import java.math.BigDecimal;
  */
 public class SaleCalculator implements TransactionCalculator {
 
-  BigDecimal purchasePrice;
-  BigDecimal salesPrice;
-  BigDecimal quantity;
+  private final BigDecimal purchasePrice;
+  private final BigDecimal salesPrice;
+  private final BigDecimal quantity;
 
   /**
    * Constructor and initializing variables from Share class.

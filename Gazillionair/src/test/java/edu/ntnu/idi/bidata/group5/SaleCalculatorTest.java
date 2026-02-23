@@ -34,4 +34,18 @@ class SaleCalculatorTest {
         BigDecimal expectedTotal = BigDecimal.valueOf(6507); // $9000 gross - $90 commission - $2403 tax
         assertEquals(0,expectedTotal.compareTo(saleCalculator.calculateTotal()) );
     }
+
+    @Test
+    void calculateTaxIsZeroWhenSaleIsLoss() {
+        // Create a scenario where the sale price is lower than the purchase price -> loss
+        // salesPrice = 50, purchasePrice = 100, quantity = 10
+        Stock stock = new Stock("LOSS", "LossCo", BigDecimal.valueOf(50));
+        Share share = new Share(stock, BigDecimal.valueOf(10), BigDecimal.valueOf(100));
+        SaleCalculator saleCalculator = new SaleCalculator(share);
+
+        // Tax should never be negative; for a loss it must be zero
+        assertEquals(0, BigDecimal.ZERO.compareTo(saleCalculator.calculateTax()));
+
+    }
+
 }
