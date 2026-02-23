@@ -5,11 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Portfolio class representing a collection of shares.
+ * The Portfolio class represents a collection of shares owned by an investor.
+ * It provides methods to manage the shares, calculate the total value of the portfolio,
+ * and retrieve shares based on stock symbols.
+ * The class ensures that shares are added and removed correctly.
  */
 public class Portfolio {
 
-  List<Share> shares;
+  private final List<Share> shares;
 
   /**
    * Constructor for Portfolio.
@@ -46,22 +49,30 @@ public class Portfolio {
     return shares.remove(share);
   }
 
+  /**
+   * Returns a list of all shares in the portfolio.
+   * Get shares returns a new ArrayList containing all shares in the portfolio to ensure that
+   * the internal list of shares cannot be modified directly from outside the class.
+   *
+   * @return a list of all shares in the portfolio.
+   */
   public List<Share> getShares() {
-    return shares;
+    return new ArrayList<>(shares);
   }
 
   /**
-   * TBD, this one returns the shares for a given stock symbol.
+   * This one returns the shares for a given stock symbol.
    *
    * @param symbol the stock symbol
-   * @return returning shares, TBD
+
+   * @return returning shares matching the stock symbol
+   * @throws IllegalArgumentException if the symbol is null or empty
    */
   public List<Share> getShares(String symbol) {
 
     if (symbol == null || symbol.isEmpty()) {
       throw new IllegalArgumentException("Stock symbol cannot be null or empty");
     }
-
 
     return shares.stream()
         .filter(share ->

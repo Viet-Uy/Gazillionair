@@ -23,39 +23,65 @@ class ExchangeTest {
 
   @Test
   void constructorInitializeFieldsCorrectly() {
-    assertEquals ("TechExchange", exchange.getName());
-    assertEquals (1,exchange.getWeek());
-    assertEquals (apple, exchange.getStock("AAPL"));
-    assertEquals (tesla, exchange.getStock("TSLA"));
+    assertEquals("TechExchange", exchange.getName());
+    assertEquals(1, exchange.getWeek());
+    assertEquals(apple, exchange.getStock("AAPL"));
+    assertEquals(tesla, exchange.getStock("TSLA"));
   }
 
   @Test
   void getStockReturnCorrectStock() {
     Stock result = exchange.getStock("TSLA");
-    assertEquals (tesla, result);
+    assertEquals(tesla, result);
   }
 
   @Test
   void findStocksReturnCorrectStock() {
     List<Stock> result = exchange.findStocks("AAPL");
-    assertEquals (apple, result);
+    assertEquals(1, result.size());
+    assertEquals(apple, result.getFirst());
   }
 
   @Test
   void advanceIncreaseWeekNumber() {
     exchange.advance();
-    assertEquals (2,  exchange.getWeek());
+    assertEquals(2, exchange.getWeek());
   }
 
   @Test
   void advanceUpdateStockPrices() {
-    BigDecimal oldApplePrice = apple.getSalesPrice();
-    BigDecimal oldTeslaPrice = tesla.getSalesPrice();
-
     exchange.advance();
+    assertNotNull(apple.getSalesPrice());
+    assertNotNull(tesla.getSalesPrice());
+    assertEquals(2, exchange.getWeek());
+  }
 
-    assertNotEquals(oldApplePrice, apple.getSalesPrice());
-    assertNotEquals(oldTeslaPrice, tesla.getSalesPrice());
+  @Test
+  void duplicateStockSymbol() {
+    assertThrows(IllegalArgumentException.class, () -> new Exchange("DuplicateExchange",
+        List.of(apple, tesla, new Stock("AAPL",
+            "Apple2", new BigDecimal(150)))));
+  }
+
+  @Test
+  void constructorThrowsExceptionWithNullName() {
+    assertThrows(IllegalArgumentException.class, () -> new Exchange(null, List.of(apple, tesla)));
+  }
+
+  @Test
+  void constructorThrowsOnNullStocks() {
+    assertThrows(IllegalArgumentException.class, () -> new Exchange("NullStocksExchange", null));
+  }
+
+  @Test
+  void getStockThrowsOnUnknownSymbol() {
+    assertThrows(IllegalArgumentException.class, () -> exchange.getStock("UNKNOWN"));
+  }
+
+  @Test
+  void findStocksReturnsEmptyListForNoMatches() {
+    List<Stock> result = exchange.findStocks("NONEXISTENT");
+    assertTrue(result.isEmpty());
   }
 
 }

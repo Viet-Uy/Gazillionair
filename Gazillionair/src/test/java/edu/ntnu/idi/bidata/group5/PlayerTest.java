@@ -45,4 +45,15 @@ class PlayerTest {
   void transactionArchiveInitializedEmpty() {
     assertTrue(player.getTransactionArchive().isEmpty());
   }
+
+  @Test
+  void addMoneyWithNegativeAmount() {
+    assertThrows(IllegalArgumentException.class, () -> player.addMoney(new BigDecimal(-100)));
+  }
+
+  // Negative test for withdrawMoney with insufficient funds
+  @Test
+  void withdrawMoneyWithInsufficientFunds() {
+    assertThrows(IllegalStateException.class, () -> player.withdrawMoney(new BigDecimal(1500)));
+  }
 }

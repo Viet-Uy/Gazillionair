@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 /**
  * Represents a sale transaction in the stock market game.
  */
-public class Sale  extends Transaction {
+public class Sale extends Transaction {
 
   /**
    * Constructor for Sale.
