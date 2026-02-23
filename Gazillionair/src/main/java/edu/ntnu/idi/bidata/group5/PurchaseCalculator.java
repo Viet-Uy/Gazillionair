@@ -7,8 +7,8 @@ import java.math.BigDecimal;
  */
 public class PurchaseCalculator implements TransactionCalculator {
 
-  BigDecimal purchasePrice;
-  BigDecimal quantity;
+  private final BigDecimal purchasePrice;
+  private final BigDecimal quantity;
 
   /**
    * Initializing share to get access to its functions.
@@ -16,23 +16,26 @@ public class PurchaseCalculator implements TransactionCalculator {
    * @param share to get access to the share prices and quantity.
    */
   public PurchaseCalculator(Share share) {
+    if (share == null) {
+      throw new IllegalArgumentException("Share cannot be null");
+    }
     this.purchasePrice = share.getPurchasePrice();
     this.quantity = share.getQuantity();
   }
 
   @Override
   public BigDecimal calculateGross() {
-    return purchasePrice.multiply(quantity); /*Gross*/
+    return purchasePrice.multiply(quantity); // Gross
   }
 
   @Override
   public BigDecimal calculateCommission() {
-    return calculateGross().multiply(BigDecimal.valueOf(0.005)); /*Gross after commission */
+    return calculateGross().multiply(BigDecimal.valueOf(0.005)); // 0.5% commission when buying
   }
 
   @Override
   public BigDecimal calculateTax() {
-    return BigDecimal.ZERO; /*No tax when buying*/
+    return BigDecimal.ZERO; // No tax when buying
   }
 
   @Override

@@ -33,7 +33,7 @@ public class Player {
    *     or if the starting money is {@code null} or not positive
    */
 
-  public Player(String name, BigDecimal startingMoney) {
+  public Player(final String name, final BigDecimal startingMoney) {
     if (name == null || name.isBlank()) {
       throw new IllegalArgumentException("Name cannot be null or blank");
     }
@@ -101,6 +101,11 @@ public class Player {
     if (money == null || money.compareTo(BigDecimal.ZERO) < 0) {
       throw new IllegalArgumentException("Money to withdraw cannot be null or negative");
     }
+
+    if (this.money.compareTo(money) < 0) {
+      throw new IllegalStateException("Insufficient funds");
+    }
+
     this.money = this.money.subtract(money);
     return this.money;
   }

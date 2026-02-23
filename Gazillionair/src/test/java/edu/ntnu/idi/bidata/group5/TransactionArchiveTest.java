@@ -68,4 +68,9 @@ class TransactionArchiveTest {
 
     assertEquals(2, archive.countDistinctWeeks());
   }
+
+  @Test
+  void countDistinctWeeksWithZeroTransactions() {
+    assertEquals(0, archive.countDistinctWeeks());
+  }
 }
