@@ -30,14 +30,13 @@ public class Stock {
    * @param salesPrice the initial sales price of the stock
    */
   public Stock(String symbol, String company, BigDecimal salesPrice) {
-
     if (symbol == null || symbol.isEmpty()) {
       throw new IllegalArgumentException("Stock symbol cannot be null or empty");
     }
     if (company == null || company.isEmpty()) {
       throw new IllegalArgumentException("Company name cannot be null or empty");
     }
-    if (salesPrice == null || salesPrice.compareTo(BigDecimal.ZERO) <= 0){
+    if (salesPrice == null || salesPrice.compareTo(BigDecimal.ZERO) <= 0) {
       throw new IllegalArgumentException("Sales price must be greater than zero");
     }
 
@@ -45,8 +44,6 @@ public class Stock {
     this.company = company;
     prices = new ArrayList<>();
     prices.add(salesPrice);
-
-
   }
 
   /**

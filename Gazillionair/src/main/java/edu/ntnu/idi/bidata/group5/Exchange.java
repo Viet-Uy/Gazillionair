@@ -15,7 +15,7 @@ import java.util.Random;
  */
 public class Exchange {
 
-  /** Minimum stock price.*/
+  /** Minimum stock price. */
   private static final BigDecimal MIN_PRICE = new BigDecimal("0.01");
 
   /** Maximum percentage change applied to a stock price per week. */
@@ -40,31 +40,33 @@ public class Exchange {
    * @param name the name of the exchange
    * @param stocks the list of stocks traded on the exchange
    * @throws IllegalArgumentException if the name is {@code null} or blank,
-   * if the stock list is {@code null}, or if duplicate stock symbols are provided
+   *     if the stock list is {@code null}, or if duplicate stock symbols are provided
    */
   public Exchange(String name, List<Stock> stocks) {
-
-
-    this.name = name;
-    this.week = 1;
-    this.random = new Random();
-    this.stockMap = new HashMap<>();
+    if (stocks == null) {
+      throw new IllegalArgumentException("Stock list cannot be null");
+    }
 
     if (name == null || name.isBlank() || !name.matches("[A-Za-z ]+")) {
       throw new IllegalArgumentException("Exchange name is invalid");
     }
+    this.stockMap = new HashMap<>();
 
     for (Stock stock : stocks) {
       if (stock == null) {
         throw new IllegalArgumentException("Stock in list cannot be null");
       }
       String symbol = stock.getSymbol();
+
       if (stockMap.containsKey(symbol)) {
         throw new IllegalArgumentException("Duplicate stock symbol: " + symbol);
       }
       stockMap.put(symbol, stock);
     }
 
+    this.name = name;
+    this.week = 1;
+    this.random = new Random();
   }
 
   /**
@@ -74,7 +76,6 @@ public class Exchange {
    */
   public String getName() {
     return name;
-
   }
 
   /**
@@ -85,15 +86,15 @@ public class Exchange {
   public int getWeek() {
     return week;
   }
+
   /**
    * Returns the stock with the given symbol.
    *
    * @param symbol the stock symbol
    * @return the stock with the specified symbol
-   *@throws IllegalArgumentException if the symbol is {@code null}, blank,
-   * or no stock with the symbol exists
+   * @throws IllegalArgumentException if the symbol is {@code null}, blank,
+   *     or no stock with the symbol exists
    */
-
   public Stock getStock(String symbol) {
     if (symbol == null || symbol.isBlank()) {
       throw new IllegalArgumentException("Symbol cannot be null or blank");

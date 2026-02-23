@@ -1,15 +1,13 @@
 package edu.ntnu.idi.bidata.group5;
 
-import java.math.BigDecimal;
-
 /**
  * Abstract class representing a transaction, either buy or sell.
  */
 public abstract class Transaction {
 
-  Share share;
-  int week;
-  TransactionCalculator calculator;
+  private final Share share;
+  private final int week;
+  private final TransactionCalculator calculator;
   protected boolean committed;
 
   /**
@@ -36,18 +34,38 @@ public abstract class Transaction {
     this.committed = false;
   }
 
+  /**
+   * Getters for the transaction properties.
+   *
+   * @return the share involved in the transaction
+   */
   public Share getShare() {
     return share;
   }
 
+  /**
+   * Get the week of the transaction.
+   *
+   * @return the week of the transaction
+   */
   public int getWeek() {
     return week;
   }
 
+  /**
+   * Get the calculator associated with the transaction.
+   *
+   * @return the calculator for the transaction
+   */
   public TransactionCalculator getCalculator() {
     return calculator;
   }
 
+  /**
+   * Check if the transaction has been committed.
+   *
+   * @return true if the transaction is committed, false otherwise.
+   */
   public boolean isCommitted() {
     return committed;
   }
@@ -55,6 +73,8 @@ public abstract class Transaction {
   /**
    * Commits the transaction, updating the player's portfolio and cash balance accordingly.
    *
+   * @param player the player for whom the transaction is being committed
+   * @throws IllegalArgumentException if the player is {@code null}
    * @throws IllegalStateException if the transaction has already been committed
    */
   public abstract void commit(Player player);
