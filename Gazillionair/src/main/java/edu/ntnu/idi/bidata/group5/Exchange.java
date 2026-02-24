@@ -1,7 +1,6 @@
 package edu.ntnu.idi.bidata.group5;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,21 +42,19 @@ public class Exchange {
    *     if the stock list is {@code null}, or if duplicate stock symbols are provided
    */
   public Exchange(String name, List<Stock> stocks) {
+    if (name == null || name.isBlank()) {
+      throw new IllegalArgumentException("Exchange name cannot be null or blank");
+    }
     if (stocks == null) {
       throw new IllegalArgumentException("Stock list cannot be null");
     }
 
-    if (name == null || name.isBlank() || !name.matches("[A-Za-z ]+")) {
-      throw new IllegalArgumentException("Exchange name is invalid");
-    }
     this.stockMap = new HashMap<>();
-
     for (Stock stock : stocks) {
       if (stock == null) {
         throw new IllegalArgumentException("Stock in list cannot be null");
       }
       String symbol = stock.getSymbol();
-
       if (stockMap.containsKey(symbol)) {
         throw new IllegalArgumentException("Duplicate stock symbol: " + symbol);
       }
@@ -69,20 +66,10 @@ public class Exchange {
     this.random = new Random();
   }
 
-  /**
-   * Returns the name of the exchange.
-   *
-   * @return the exchange name
-   */
   public String getName() {
     return name;
   }
 
-  /**
-   * Returns the current trading week.
-   *
-   * @return the current week number
-   */
   public int getWeek() {
     return week;
   }
@@ -131,9 +118,59 @@ public class Exchange {
   }
 
   /**
-   * Advances the exchange by one trading week.
-   * The current week number is incremented and the sales price of each stock
-   * is updated by applying a random percentage change.
+   * Buys shares of a stock for the given player. The purchase is committed immediately.
+   *
+   * @param player the player who buys
+   * @param symbol the stock symbol
+   * @param quantity the quantity to buy
+   * @return the completed purchase transaction
+   * @throws IllegalArgumentException if player, symbol or quantity are invalid
+   * @throws IllegalStateException if the player cannot afford the purchase
+   */
+  public Purchase buy(Player player, String symbol, BigDecimal quantity) {
+    if (player == null) {
+      throw new IllegalArgumentException("Player cannot be null");
+    }
+    if (symbol == null || symbol.isBlank()) {
+      throw new IllegalArgumentException("Symbol cannot be null or blank");
+    }
+    if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("Quantity must be greater than zero");
+    }
+
+    Stock stock = getStock(symbol);
+    BigDecimal purchasePrice = stock.getSalesPrice();
+    Share share = new Share(stock, quantity, purchasePrice);
+
+    Purchase purchase = new Purchase(share, week);
+    purchase.commit(player);
+    return purchase;
+  }
+
+  /**
+   * Sells an owned share for the given player. The sale is committed immediately.
+   *
+   * @param player the player who sells
+   * @param share the share to sell
+   * @return the completed sale transaction
+   * @throws IllegalArgumentException if player or share are invalid
+   * @throws IllegalStateException if the player does not own the share
+   */
+  public Sale sell(Player player, Share share) {
+    if (player == null) {
+      throw new IllegalArgumentException("Player cannot be null");
+    }
+    if (share == null) {
+      throw new IllegalArgumentException("Share cannot be null");
+    }
+
+    Sale sale = new Sale(share, week);
+    sale.commit(player);
+    return sale;
+  }
+
+  /**
+   * Advances the exchange by one trading week and updates all stock prices.
    */
   public void advance() {
     week++;
@@ -145,12 +182,6 @@ public class Exchange {
     }
   }
 
-  /**
-   * Applies a random percentage change to a stock price.
-   *
-   * @param current the current sales price
-   * @return the updated sales price
-   */
   private BigDecimal applyRandomChange(BigDecimal current) {
     double sign = (random.nextDouble() * 2.0) - 1.0;
     BigDecimal changePercent = MAX_CHANGE.multiply(BigDecimal.valueOf(sign));
