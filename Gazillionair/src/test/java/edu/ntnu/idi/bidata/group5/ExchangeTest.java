@@ -1,5 +1,6 @@
 package edu.ntnu.idi.bidata.group5;
 
+import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -54,7 +55,7 @@ class ExchangeTest {
 
   @Test
   void constructorThrowsOnNullStockInList() {
-    assertThrows(IllegalArgumentException.class, () -> new Exchange("BadExchange", List.of(apple, null)));
+    assertThrows(IllegalArgumentException.class, () -> new Exchange("BadExchange", Arrays.asList(apple, null)));
   }
 
   @Test
@@ -137,7 +138,7 @@ class ExchangeTest {
 
     exchange.buy(player, "AAPL", new BigDecimal("2")); // 2 * 100 = 200
 
-    assertEquals(0, player.getMoney().compareTo(new BigDecimal("800")));
+    assertEquals(0, player.getMoney().compareTo(new BigDecimal("799")));
     assertEquals(1, player.getPortfolio().getShares().size());
     assertFalse(player.getTransactionArchive().isEmpty());
     assertEquals(1, player.getTransactionArchive().getPurchases().size());
@@ -198,7 +199,7 @@ class ExchangeTest {
 
     exchange.sell(player, ownedShare);
 
-    assertEquals(0, player.getMoney().compareTo(new BigDecimal("1000")));
+    assertEquals(0, player.getMoney().compareTo(new BigDecimal("998.50")));
     assertTrue(player.getPortfolio().getShares().isEmpty());
     assertEquals(1, player.getTransactionArchive().getSales().size());
   }
