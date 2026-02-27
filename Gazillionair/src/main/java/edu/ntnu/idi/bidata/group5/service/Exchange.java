@@ -1,4 +1,6 @@
-package edu.ntnu.idi.bidata.group5;
+package edu.ntnu.idi.bidata.group5.service;
+
+import edu.ntnu.idi.bidata.group5.model.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

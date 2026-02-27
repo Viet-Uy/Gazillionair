@@ -1,5 +1,7 @@
-package edu.ntnu.idi.bidata.group5;
+package edu.ntnu.idi.bidata.group5.calculator;
 
+import edu.ntnu.idi.bidata.group5.model.Share;
+import edu.ntnu.idi.bidata.group5.model.Stock;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
