@@ -1,4 +1,6 @@
-package edu.ntnu.idi.bidata.group5;
+package edu.ntnu.idi.bidata.group5.model;
+
+import edu.ntnu.idi.bidata.group5.calculator.TransactionCalculator;
 
 /**
  * Abstract class representing a transaction, either buy or sell.

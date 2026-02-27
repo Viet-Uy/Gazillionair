@@ -1,6 +1,7 @@
-package edu.ntnu.idi.bidata.group5;
+package edu.ntnu.idi.bidata.group5.model;
 
 import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
