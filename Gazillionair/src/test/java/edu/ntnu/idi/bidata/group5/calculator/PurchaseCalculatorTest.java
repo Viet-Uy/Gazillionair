@@ -13,7 +13,7 @@ class PurchaseCalculatorTest {
     @Test
     void calculateGross() {
       PurchaseCalculator purchaseCalculator = new PurchaseCalculator(new Share(new Stock("AAPL", "Apple", BigDecimal.valueOf(100)), BigDecimal.valueOf(10), BigDecimal.valueOf(50)));
-      BigDecimal expectedGross = BigDecimal.valueOf(400); // 0 shares * $ 100 price = $500 gross
+      BigDecimal expectedGross = BigDecimal.valueOf(500); // 0 shares * $ 100 price = $500 gross
       assertEquals(expectedGross, purchaseCalculator.calculateGross());
     }
 
