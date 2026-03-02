@@ -91,4 +91,50 @@ public class Stock {
     prices.add(newPrice);
     return getSalesPrice();
   }
+
+  /**
+   * Returns a copy of the historical sales prices of the stock.
+   *
+   * @return a new list containing all historical prices
+   */
+  public List<BigDecimal> getHistoricalPrices() {
+    return new ArrayList<>(prices);
+  }
+
+  /**
+   * Returns the highest price in the stock's price history.
+   *
+   * @return the maximum price recorded
+   */
+  public BigDecimal getHighestPrice() {
+    return prices.stream()
+        .max(BigDecimal::compareTo)
+        .orElseThrow(() -> new IllegalStateException("Price history is empty"));
+  }
+
+  /**
+   * Returns the lowest price in the stock's price history.
+   *
+   * @return the minimum price recorded
+   */
+  public BigDecimal getLowestPrice() {
+    return prices.stream()
+        .min(BigDecimal::compareTo)
+        .orElseThrow(() -> new IllegalStateException("Price history is empty"));
+  }
+
+  /**
+   * Returns the change between the latest price and the previous price.
+   * If there is only one price in history, returns BigDecimal.ZERO.
+   *
+   * @return the difference (current price - previous price)
+   */
+  public BigDecimal getLatestPriceChange() {
+    if (prices.size() < 2) {
+      return BigDecimal.ZERO;
+    }
+    BigDecimal latest = prices.getLast();
+    BigDecimal previous = prices.get(prices.size() - 2);
+    return latest.subtract(previous);
+  }
 }
