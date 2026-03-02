@@ -50,15 +50,37 @@ class PlayerTest {
   }
 
   @Test
+  void getNetWorthReturnsCurrentBalance() {
+    assertEquals(0, player.getNetWorth().compareTo(new BigDecimal("1000")));
+  }
+
+  @Test
   void addMoneyIncreaseBalance() {
-    player.addMoney(new BigDecimal("500"));
-    assertEquals(0, player.getMoney().compareTo(new BigDecimal("1500")));
+    BigDecimal result = player.addMoney(new BigDecimal("500"));
+    assertEquals(0, result.compareTo(new BigDecimal("1500")));
   }
 
   @Test
   void addMoneyWithNegativeAmount() {
     assertThrows(IllegalArgumentException.class,
             () -> player.addMoney(new BigDecimal("-100")));
+  }
+
+  @Test
+  void getStatusReturnsNovice() {
+    assertEquals(PlayerStatus.NOVICE, player.getStatus(0));
+  }
+
+  @Test
+  void getStatusReturnsInvestor() {
+    player.addMoney(new BigDecimal("200"));
+    assertEquals(PlayerStatus.INVESTOR, player.getStatus(11));
+  }
+
+  @Test
+  void getStatusReturnsSpeculator() {
+    player.addMoney(new BigDecimal("1000"));
+    assertEquals(PlayerStatus.SPECULATOR, player.getStatus(21));
   }
 
   @Test
@@ -69,8 +91,8 @@ class PlayerTest {
 
   @Test
   void withdrawMoneyDecreaseBalance() {
-    player.withdrawMoney(new BigDecimal("250"));
-    assertEquals(0, player.getMoney().compareTo(new BigDecimal("750")));
+    BigDecimal result = player.withdrawMoney(new BigDecimal("250"));
+    assertEquals(0, result.compareTo(new BigDecimal("750")));
   }
 
   @Test

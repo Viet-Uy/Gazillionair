@@ -1,7 +1,6 @@
 package edu.ntnu.idi.bidata.group5.calculator;
 
 import edu.ntnu.idi.bidata.group5.model.Share;
-
 import java.math.BigDecimal;
 
 /**
