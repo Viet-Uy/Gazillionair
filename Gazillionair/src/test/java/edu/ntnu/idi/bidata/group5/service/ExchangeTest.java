@@ -1,6 +1,10 @@
-package edu.ntnu.idi.bidata.group5;
+package edu.ntnu.idi.bidata.group5.service;
 
 import java.util.Arrays;
+
+import edu.ntnu.idi.bidata.group5.model.Player;
+import edu.ntnu.idi.bidata.group5.model.Share;
+import edu.ntnu.idi.bidata.group5.model.Stock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -55,7 +59,7 @@ class ExchangeTest {
 
   @Test
   void constructorThrowsOnNullStockInList() {
-    assertThrows(IllegalArgumentException.class, () -> new Exchange("NullStockInListExchange", Arrays.asList(apple, null)));
+    assertThrows(IllegalArgumentException.class, () -> new Exchange("BadExchange", Arrays.asList(apple, null)));
   }
 
   @Test
