@@ -1,8 +1,13 @@
-package edu.ntnu.idi.bidata.group5;
+package edu.ntnu.idi.bidata.group5.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
+
+import edu.ntnu.idi.bidata.group5.model.Purchase;
+import edu.ntnu.idi.bidata.group5.model.Sale;
+import edu.ntnu.idi.bidata.group5.model.Share;
+import edu.ntnu.idi.bidata.group5.model.Stock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
