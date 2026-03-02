@@ -185,6 +185,44 @@ public class Exchange {
     }
   }
 
+  /**
+   * Returns the stocks with the largest positive price changes since last week,
+   * sorted by price change from highest to lowest.
+   *
+   * @param limit the maximum number of stocks to return
+   * @return a list of top gaining stocks, sorted by price change (descending)
+   * @throws IllegalArgumentException if limit is less than or equal to zero
+   */
+  public List<Stock> getGainers(int limit) {
+    if (limit <= 0) {
+      throw new IllegalArgumentException("Limit must be more than zero");
+    }
+
+    return stockMap.values().stream()
+        .sorted((a, b) -> b.getLatestPriceChange().compareTo(a.getLatestPriceChange()))
+        .limit(limit)
+        .toList();
+  }
+
+  /**
+   * Returns the stocks with the largest negative price changes since last week,
+   * sorted by price change from lowest to highest (biggest losses first).
+   *
+   * @param limit the maximum number of stocks to return
+   * @return a list of top losing stocks, sorted by price change (ascending)
+   * @throws IllegalArgumentException if limit is less than or equal to zero
+   */
+  public List<Stock> getLosers(int limit) {
+    if (limit <= 0) {
+      throw new IllegalArgumentException("Limit must be more than zero");
+    }
+
+    return stockMap.values().stream()
+        .sorted((a, b) -> a.getLatestPriceChange().compareTo(b.getLatestPriceChange()))
+        .limit(limit)
+        .toList();
+  }
+
   private BigDecimal applyRandomChange(BigDecimal current) {
     double sign = (random.nextDouble() * 2.0) - 1.0;
     BigDecimal changePercent = MAX_CHANGE.multiply(BigDecimal.valueOf(sign));
