@@ -1,5 +1,6 @@
 package edu.ntnu.idi.bidata.group5.model;
 
+import edu.ntnu.idi.bidata.group5.calculator.SaleCalculator;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -53,24 +54,27 @@ class PortfolioTest {
   }
 
   @Test
-  void getTotalValueSuccessfully() {
-    Share share1 = new Share(new Stock("AAPL1","Apple1",
-            BigDecimal.valueOf(110)),
-            BigDecimal.valueOf(10),
-            BigDecimal.valueOf(100)
-    );
-    Share share2 = new Share(new Stock("AAPL2","Apple2",
-            BigDecimal.valueOf(120)),
-            BigDecimal.valueOf(15),
-            BigDecimal.valueOf(110)
-    );
+  void getNetWorthSuccessfully() {
+    Share share1 = new Share(new Stock("AAPL", "Apple",
+        BigDecimal.valueOf(110)),
+        BigDecimal.valueOf(10),
+        BigDecimal.valueOf(100));
+    Share share2 = new Share(new Stock("GOOGL", "Google",
+        BigDecimal.valueOf(120)),
+        BigDecimal.valueOf(15),
+        BigDecimal.valueOf(110));
     Portfolio portfolio = new Portfolio();
     portfolio.addShare(share1);
     portfolio.addShare(share2);
-    BigDecimal expected = (share1.getStock().getSalesPrice().multiply(share1.getQuantity()).add
-                          (share2.getStock().getSalesPrice().multiply(share2.getQuantity())));
-    assertEquals(expected, portfolio.getTotalValue());
+
+    SaleCalculator calc1 = new SaleCalculator(share1);
+    SaleCalculator calc2 = new SaleCalculator(share2);
+    BigDecimal expectedNetWorth =
+        calc1.calculateTotal().add(calc2.calculateTotal());
+
+    assertEquals(0, expectedNetWorth.compareTo(portfolio.getNetWorth()));
   }
+
 
   @Test
   void getMultipleSharesBySymbolSuccessfully() {

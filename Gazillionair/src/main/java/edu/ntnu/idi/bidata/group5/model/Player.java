@@ -1,7 +1,8 @@
 package edu.ntnu.idi.bidata.group5.model;
 
-import edu.ntnu.idi.bidata.group5.service.TransactionArchive;
+import static java.math.RoundingMode.HALF_UP;
 
+import edu.ntnu.idi.bidata.group5.service.TransactionArchive;
 import java.math.BigDecimal;
 
 /**
@@ -128,5 +129,32 @@ public class Player {
    */
   public TransactionArchive getTransactionArchive() {
     return transactionArchive;
+  }
+
+  /**
+   * Calculates and returns the player's net worth, which is the sum of their current balance
+   * and the total value of their owned shares based on current stock prices.
+   *
+   * @return the player's net worth
+   */
+  public BigDecimal getNetWorth() {
+    return money.add(portfolio.getNetWorth());
+  }
+
+  /**
+   * Determines the player's status based on their net worth.
+   *
+   * @return the player's status as a PlayerStatus enum value
+   */
+  public PlayerStatus getStatus(int week) {
+    BigDecimal netWorth = getNetWorth();
+    BigDecimal growth = netWorth.divide(startingMoney, 2, HALF_UP);
+    if (week >= 20 && growth.compareTo(BigDecimal.valueOf(2.0)) >= 0) {
+      return PlayerStatus.SPECULATOR;
+    } else if (week >= 10 && growth.compareTo(BigDecimal.valueOf(1.2)) >= 0) {
+      return PlayerStatus.INVESTOR;
+    } else {
+      return PlayerStatus.NOVICE;
+    }
   }
 }
