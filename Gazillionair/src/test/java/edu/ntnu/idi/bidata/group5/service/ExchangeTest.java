@@ -1,5 +1,7 @@
 package edu.ntnu.idi.bidata.group5.service;
 
+import edu.ntnu.idi.bidata.group5.model.Purchase;
+import edu.ntnu.idi.bidata.group5.model.Sale;
 import java.util.Arrays;
 
 import edu.ntnu.idi.bidata.group5.model.Player;
@@ -145,12 +147,20 @@ class ExchangeTest {
   void buyShouldReduceMoneyAddShareAndArchiveTransaction() {
     Player player = new Player("Player1", new BigDecimal("1000"));
 
-    exchange.buy(player, "AAPL", new BigDecimal("2")); // 2 * 100 = 200
+    Purchase purchase = exchange.buy(player, "AAPL", new BigDecimal("2")); // 2 * 100 = 200
 
+    // Existing Assertions
     assertEquals(0, player.getMoney().compareTo(new BigDecimal("799")));
     assertEquals(1, player.getPortfolio().getShares().size());
     assertFalse(player.getTransactionArchive().isEmpty());
     assertEquals(1, player.getTransactionArchive().getPurchases().size());
+
+    // Missing - verifying return value
+    assertNotNull(purchase);
+    assertTrue(purchase.isCommitted());
+    assertEquals("AAPL", purchase.getShare().getStock().getSymbol());
+    assertEquals(0, new BigDecimal ("2").compareTo(purchase.getShare().getQuantity()));
+    assertEquals(1, purchase.getWeek());
   }
 
   @Test
@@ -199,7 +209,7 @@ class ExchangeTest {
             () -> exchange.buy(player, "AAPL", new BigDecimal("-1")));
   }
 
-  //tests for sell
+  //tests for sale
   @Test
   void sellShouldIncreaseMoneyRemoveShareAndArchiveTransaction() {
     Player player = new Player("Player1", new BigDecimal("1000"));
@@ -207,11 +217,18 @@ class ExchangeTest {
     exchange.buy(player, "AAPL", new BigDecimal("1"));
     Share ownedShare = player.getPortfolio().getShares().getFirst();
 
-    exchange.sell(player, ownedShare);
+    Sale sale = exchange.sell(player, ownedShare);
 
+    // Existing assertions
     assertEquals(0, player.getMoney().compareTo(new BigDecimal("998.50")));
     assertTrue(player.getPortfolio().getShares().isEmpty());
     assertEquals(1, player.getTransactionArchive().getSales().size());
+
+    // Missing – verifying return value
+    assertNotNull(sale);
+    assertTrue(sale.isCommitted());
+    assertEquals(ownedShare, sale.getShare());
+    assertEquals(1, sale.getWeek());
   }
 
   @Test
