@@ -23,19 +23,28 @@ public class StockFileHandler {
    */
   public List<Stock> readFromFile(String filePath) throws IOException {
     List<Stock> stocks = new ArrayList<>();
+    int lineNumber = 0;
     try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
       String line;
       while ((line = reader.readLine()) != null) {
-        if (line.isBlank() || line.startsWith("#")) {
-          continue;
-        }
+        lineNumber++;
+        if (line.isBlank() || line.startsWith("#")) continue;
         String[] parts = line.split(",");
+        if (parts.length != 3)
+          throw new IOException("Invalid format at line " + lineNumber);
         String symbol = parts[0].trim();
         String name = parts[1].trim();
-        BigDecimal price = new BigDecimal(parts[2].trim());
-        stocks.add(new Stock(symbol, name, price));
+        if (symbol.isEmpty() || name.isEmpty())
+          throw new IOException("Empty field at line " + lineNumber);
+        try {
+          BigDecimal price = new BigDecimal(parts[2].trim());
+          stocks.add(new Stock(symbol, name, price));
+        } catch (IllegalArgumentException e) {
+          throw new IOException("Bad data at line " + lineNumber, e);
+        }
       }
     }
+
     return stocks;
   }
 
