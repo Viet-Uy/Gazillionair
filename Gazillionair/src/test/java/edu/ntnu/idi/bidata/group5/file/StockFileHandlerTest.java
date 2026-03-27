@@ -31,4 +31,24 @@ class StockFileHandlerTest {
     assertThrows(IOException.class, () -> handler.readFromFile("invalid_path.csv"));
   }
 
+  @Test
+  void readFromFileThrowsOnMalformedRow() {
+    // create a temp file with a bad row
+    assertThrows(IOException.class,
+            () -> handler.readFromFile("src/test/resources/stocks_malformed.csv"));
+  }
+
+  @Test
+  void readFromFileThrowsOnBadPrice() {
+    assertThrows(IOException.class,
+            () -> handler.readFromFile("src/test/resources/stocks_bad_price.csv"));
+  }
+
+  @Test
+  void readFromFileSkipsCommentsAndBlanks() throws IOException {
+    List<Stock> stocks = handler.readFromFile(testFile);
+    // testFile has comments and blanks — ensure only real stocks returned
+    assertEquals(2, stocks.size());
+  }
+
 }
