@@ -146,12 +146,13 @@ public class Player {
    *
    * @return the player's status as a PlayerStatus enum value
    */
-  public PlayerStatus getStatus(int week) {
+  public PlayerStatus getStatus() {
     BigDecimal netWorth = getNetWorth();
+    int weeks = transactionArchive.countDistinctWeeks();
     BigDecimal growth = netWorth.divide(startingMoney, 2, HALF_UP);
-    if (week >= 20 && growth.compareTo(BigDecimal.valueOf(2.0)) >= 0) {
+    if (weeks >= 20 && growth.compareTo(BigDecimal.valueOf(2.0)) >= 0) {
       return PlayerStatus.SPECULATOR;
-    } else if (week >= 10 && growth.compareTo(BigDecimal.valueOf(1.2)) >= 0) {
+    } else if (weeks >= 10 && growth.compareTo(BigDecimal.valueOf(1.2)) >= 0) {
       return PlayerStatus.INVESTOR;
     } else {
       return PlayerStatus.NOVICE;

@@ -1,9 +1,11 @@
 package edu.ntnu.idi.bidata.group5.model;
 
+import edu.ntnu.idi.bidata.group5.service.Exchange;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -68,19 +70,31 @@ class PlayerTest {
 
   @Test
   void getStatusReturnsNovice() {
-    assertEquals(PlayerStatus.NOVICE, player.getStatus(0));
+    assertEquals(PlayerStatus.NOVICE, player.getStatus());
   }
 
   @Test
   void getStatusReturnsInvestor() {
-    player.addMoney(new BigDecimal("200"));
-    assertEquals(PlayerStatus.INVESTOR, player.getStatus(11));
+    Player richPlayer = new Player("Investor", new BigDecimal("10000"));
+    Stock stock = new Stock("AAPL", "Apple", new BigDecimal("1"));
+    for (int i = 0; i < 10; i++) {
+      Share share = new Share(stock, new BigDecimal("1"), stock.getSalesPrice());
+      new Purchase(share, i + 1).commit(richPlayer);
+    }
+    richPlayer.addMoney(new BigDecimal("2001")); // pushes net worth above 1.2x starting
+    assertEquals(PlayerStatus.INVESTOR, richPlayer.getStatus());
   }
 
   @Test
   void getStatusReturnsSpeculator() {
-    player.addMoney(new BigDecimal("1000"));
-    assertEquals(PlayerStatus.SPECULATOR, player.getStatus(21));
+    Player richPlayer = new Player("Speculator", new BigDecimal("10000"));
+    Stock stock = new Stock("AAPL", "Apple", new BigDecimal("1"));
+    for (int i = 0; i < 20; i++) {
+      Share share = new Share(stock, new BigDecimal("1"), stock.getSalesPrice());
+      new Purchase(share, i + 1).commit(richPlayer);
+    }
+    richPlayer.addMoney(new BigDecimal("10001")); // pushes net worth above 2x starting
+    assertEquals(PlayerStatus.SPECULATOR, richPlayer.getStatus());
   }
 
   @Test
