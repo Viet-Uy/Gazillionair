@@ -58,7 +58,7 @@ public class DashboardView implements ModelObserver {
    * Constructs a DashboardView with a GameSession and Stage.
    *
    * @param session the GameSession containing player and market data
-   * @param stage the JavaFX Stage for window operations
+   * @param stage   the JavaFX Stage for window operations
    */
   public DashboardView(GameSession session, Stage stage) {
     this.session = session;
@@ -75,8 +75,8 @@ public class DashboardView implements ModelObserver {
    */
   private void initializeUI() {
     root.setStyle(
-        "-fx-background-color: linear-gradient(to bottom right, #0f172a, "
-            + "#1e293b, #0f172a);");
+            "-fx-background-color: linear-gradient(to bottom right, #0f172a, "
+                    + "#1e293b, #0f172a);");
 
     if (session != null) {
       VBox header = createHeader();
@@ -85,7 +85,7 @@ public class DashboardView implements ModelObserver {
       VBox statsSection = createStatsCards();
       VBox centerContent = new VBox(16);
       centerContent.setPadding(new Insets(16));
-      
+
       TabPane tabPane = createTabPane();
       centerContent.getChildren().addAll(statsSection, tabPane);
       VBox.setVgrow(tabPane, Priority.ALWAYS);
@@ -107,18 +107,18 @@ public class DashboardView implements ModelObserver {
     VBox header = new VBox();
     header.setPadding(new Insets(16, 24, 16, 24));
     header.setStyle(
-        "-fx-background-color: rgba(30, 41, 59, 0.8); "
-            + "-fx-border-color: #334155; "
-            + "-fx-border-width: 0 0 1 0;");
+            "-fx-background-color: rgba(30, 41, 59, 0.8); "
+                    + "-fx-border-color: #334155; "
+                    + "-fx-border-width: 0 0 1 0;");
 
     HBox headerContent = new HBox(20);
     headerContent.setAlignment(Pos.CENTER_LEFT);
 
     Circle logo = new Circle(20);
     LinearGradient gradient = new LinearGradient(
-        0.0, 0.0, 1.0, 1.0, true, null,
-        new Stop(0.0, Color.web("#22c55e")),
-        new Stop(1.0, Color.web("#10b981"))
+            0.0, 0.0, 1.0, 1.0, true, null,
+            new Stop(0.0, Color.web("#22c55e")),
+            new Stop(1.0, Color.web("#10b981"))
     );
     logo.setFill(gradient);
 
@@ -131,11 +131,11 @@ public class DashboardView implements ModelObserver {
     statusBadge.setTextFill(Color.web("#ffffff"));
     statusBadge.setPadding(new Insets(4, 12, 4, 12));
     statusBadge.setStyle(
-        "-fx-background-color: linear-gradient(to right, #64748b, #475569); "
-            + "-fx-background-radius: 20; "
-            + "-fx-border-color: #64748b; "
-            + "-fx-border-width: 1; "
-            + "-fx-border-radius: 20;");
+            "-fx-background-color: linear-gradient(to right, #64748b, #475569); "
+                    + "-fx-background-radius: 20; "
+                    + "-fx-border-color: #64748b; "
+                    + "-fx-border-width: 1; "
+                    + "-fx-border-radius: 20;");
 
     HBox playerInfo = new HBox(12);
     playerInfo.setAlignment(Pos.CENTER_LEFT);
@@ -146,12 +146,12 @@ public class DashboardView implements ModelObserver {
 
     Button nextWeekBtn = new Button("Next Week");
     nextWeekBtn.setStyle(
-        "-fx-background-color: #22c55e; "
-            + "-fx-text-fill: white; "
-            + "-fx-padding: 8px 16px; "
-            + "-fx-background-radius: 8; "
-            + "-fx-font-size: 14; "
-            + "-fx-cursor: hand;");
+            "-fx-background-color: #22c55e; "
+                    + "-fx-text-fill: white; "
+                    + "-fx-padding: 8px 16px; "
+                    + "-fx-background-radius: 8; "
+                    + "-fx-font-size: 14; "
+                    + "-fx-cursor: hand;");
     nextWeekBtn.setOnAction(e -> onNextWeek());
 
     actionButtons.getChildren().add(nextWeekBtn);
@@ -211,11 +211,11 @@ public class DashboardView implements ModelObserver {
     VBox card = new VBox(8);
     card.setPadding(new Insets(16));
     card.setStyle(
-        "-fx-background-color: rgba(15, 23, 42, 0.5); "
-            + "-fx-border-color: #334155; "
-            + "-fx-border-width: 1; "
-            + "-fx-background-radius: 8; "
-            + "-fx-border-radius: 8;");
+            "-fx-background-color: rgba(15, 23, 42, 0.5); "
+                    + "-fx-border-color: #334155; "
+                    + "-fx-border-width: 1; "
+                    + "-fx-background-radius: 8; "
+                    + "-fx-border-radius: 8;");
 
     Label labelText = new Label(label);
     labelText.setFont(Font.font("System", FontWeight.MEDIUM, 12));
@@ -237,10 +237,10 @@ public class DashboardView implements ModelObserver {
   private TabPane createTabPane() {
     TabPane tabPane = new TabPane();
     tabPane.setStyle(
-        "-fx-padding: 0; "
-            + "-fx-background-color: rgba(30, 41, 59, 0.5); "
-            + "-fx-border-color: #334155; "
-            + "-fx-border-width: 1 0 0 0;");
+            "-fx-padding: 0; "
+                    + "-fx-background-color: rgba(30, 41, 59, 0.5); "
+                    + "-fx-border-color: #334155; "
+                    + "-fx-border-width: 1 0 0 0;");
     tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
     tabPane.setMinHeight(200);
     tabPane.setPrefWidth(Double.MAX_VALUE);
@@ -267,7 +267,7 @@ public class DashboardView implements ModelObserver {
   /**
    * Creates a single tab with the given title and content.
    *
-   * @param title the tab title
+   * @param title   the tab title
    * @param content the tab content node
    * @return Tab with the given configuration
    */
@@ -328,7 +328,7 @@ public class DashboardView implements ModelObserver {
       cashLabel.setText(formatMoney(session.getPlayer().getMoney()));
       weekLabel.setText(String.valueOf(session.getCurrentWeek()));
       statusBadge.setText(session.getPlayerStatus().toString());
-      
+
       if (marketController != null) {
         marketController.refreshStockTable();
       }
@@ -352,4 +352,5 @@ public class DashboardView implements ModelObserver {
   public GameSession getSession() {
     return session;
   }
+}
 
