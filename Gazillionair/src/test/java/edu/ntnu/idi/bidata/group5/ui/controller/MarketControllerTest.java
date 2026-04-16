@@ -9,6 +9,7 @@ import edu.ntnu.idi.bidata.group5.model.GameSession;
 import edu.ntnu.idi.bidata.group5.model.Purchase;
 import edu.ntnu.idi.bidata.group5.model.Sale;
 import edu.ntnu.idi.bidata.group5.model.Stock;
+import edu.ntnu.idi.bidata.group5.ui.view.MarketView;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,12 +24,14 @@ class MarketControllerTest {
     Stock apple = new Stock("AAPL", "Apple", new BigDecimal("100"));
     Stock tesla = new Stock("TSLA", "Tesla", new BigDecimal("200"));
     GameSession session = new GameSession("Uy", new BigDecimal("1000"), List.of(apple, tesla));
-    controller = new MarketController(session);
+    MarketView marketView = new MarketView();  // ADD THIS LINE
+    controller = new MarketController(session, marketView);  // Fix: use 'session' not 'GameSession'
   }
 
   @Test
   void constructorRejectsNullSession() {
-    assertThrows(IllegalArgumentException.class, () -> new MarketController(null));
+    MarketView marketView = new MarketView();  // ADD THIS LINE
+    assertThrows(IllegalArgumentException.class, () -> new MarketController(null, marketView));  // Fix: add marketView param
   }
 
   @Test
