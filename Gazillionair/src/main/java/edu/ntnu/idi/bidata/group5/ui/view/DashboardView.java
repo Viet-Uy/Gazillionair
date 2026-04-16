@@ -352,5 +352,4 @@ public class DashboardView implements ModelObserver {
   public GameSession getSession() {
     return session;
   }
-}
 

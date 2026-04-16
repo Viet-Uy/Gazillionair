@@ -18,24 +18,39 @@ import java.util.List;
 public class StockFileHandler {
 
   /**
-   * Constructor for StockFileHandler.
-   * Initializes any necessary resources or configurations for file handling.
+   * Reads stock data from a file.
+   *
+   * @param filePath the path to the file to read from
+   * @return a list of stocks read from the file
+   * @throws IOException if the file format is invalid or an I/O error occurs
    */
   public List<Stock> readFromFile(String filePath) throws IOException {
     List<Stock> stocks = new ArrayList<>();
     int lineNumber = 0;
+
     try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
       String line;
+
       while ((line = reader.readLine()) != null) {
         lineNumber++;
-        if (line.isBlank() || line.startsWith("#")) continue;
+
+        if (line.isBlank() || line.startsWith("#")) {
+          continue;
+        }
+
         String[] parts = line.split(",");
-        if (parts.length != 3)
+
+        if (parts.length != 3) {
           throw new IOException("Invalid format at line " + lineNumber);
+        }
+
         String symbol = parts[0].trim();
         String name = parts[1].trim();
-        if (symbol.isEmpty() || name.isEmpty())
+
+        if (symbol.isEmpty() || name.isEmpty()) {
           throw new IOException("Empty field at line " + lineNumber);
+        }
+
         try {
           BigDecimal price = new BigDecimal(parts[2].trim());
           stocks.add(new Stock(symbol, name, price));
