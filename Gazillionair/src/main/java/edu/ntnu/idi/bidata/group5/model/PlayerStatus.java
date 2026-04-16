@@ -5,7 +5,7 @@ package edu.ntnu.idi.bidata.group5.model;
  * The status can be used to indicate whether a player is active, bankrupt, or has won the game.
  */
 public enum PlayerStatus {
-  NOVICE, //starting level
-  INVESTOR, //10+ weeks and grown net-worth by 20%
+  NOVICE, // starting level
+  INVESTOR, // 10+ weeks and grown net-worth by 20%
   SPECULATOR // 20+ weeks and doubled net-worth
 }

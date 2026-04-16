@@ -1,7 +1,10 @@
 package edu.ntnu.idi.bidata.group5.service;
 
-import edu.ntnu.idi.bidata.group5.model.*;
-
+import edu.ntnu.idi.bidata.group5.model.Player;
+import edu.ntnu.idi.bidata.group5.model.Purchase;
+import edu.ntnu.idi.bidata.group5.model.Sale;
+import edu.ntnu.idi.bidata.group5.model.Share;
+import edu.ntnu.idi.bidata.group5.model.Stock;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
