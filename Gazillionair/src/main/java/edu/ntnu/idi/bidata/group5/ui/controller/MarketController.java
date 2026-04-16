@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * MarketController manages the stock market interaction.
- * Handles search queries and buy/sell transactions via the MarketView.
- * Bridges UI input to the GameSession backend.
+ * MarketController is responsible for handling market operations such as
+ * searching for stocks, and executing buy/sell transactions.
+ * It connects the MarketView (UI) with the GameSession (business logic).
  */
 public class MarketController {
 
@@ -23,7 +23,7 @@ public class MarketController {
    * Constructs a MarketController with the given GameSession and MarketView.
    *
    * @param session the GameSession containing market data
-   * @param view the MarketView for display
+   * @param view the MarketView for UI interaction
    * @throws IllegalArgumentException if session or view is null
    */
   public MarketController(GameSession session, MarketView view) {
@@ -62,10 +62,10 @@ public class MarketController {
   }
 
   /**
-   * Searches for stocks by symbol or company name.
+   * Searches for stocks based on symbol or company name.
    *
-   * @param query the search query
-   * @return list of matching stocks
+   * @param query the search query string
+   * @return list of matching stocks (empty if none found)
    */
   public List<Stock> search(String query) {
     return session.searchStocks(query);
@@ -104,7 +104,6 @@ public class MarketController {
 
   /**
    * Refreshes the stock table with current market data.
-   * Called when the GameSession notifies of changes (e.g., after nextWeek).
    */
   public void refreshStockTable() {
     List<Stock> currentStocks = session.getMarketStocks();
