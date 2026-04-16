@@ -1,0 +1,101 @@
+/* Gazillionair Application Stylesheet */
+
+/* Global Styles */
+* {
+    -fx-font-family: "System";
+}
+
+/* Root Background */
+.root {
+    -fx-background-color: linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a);
+}
+
+/* Tab Pane Styling */
+.tab-pane {
+    -fx-padding: 0;
+    -fx-background-color: rgba(30, 41, 59, 0.5);
+    -fx-border-color: #334155;
+}
+
+.tab-pane:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.tab-pane .tab-header-background {
+    -fx-background-color: rgba(15, 23, 42, 0.9);
+}
+
+.tab-pane .tab-header-area {
+    -fx-padding: 0;
+    -fx-background-color: rgba(15, 23, 42, 0.9);
+    -fx-border-color: #334155;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tab {
+    -fx-padding: 12px 40px;
+    -fx-background-color: rgba(30, 41, 59, 0.6);
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.tab:selected {
+    -fx-background-color: rgba(34, 197, 94, 0.15);
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #22c55e;
+    -fx-border-width: 0 0 2 0;
+}
+
+.tab:hover {
+    -fx-background-color: rgba(51, 65, 85, 0.8);
+}
+
+.tab-label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/* Table Styling */
+.table-view {
+    -fx-background-color: rgba(15, 23, 42, 0.5);
+    -fx-control-inner-background: rgba(15, 23, 42, 0.5);
+}
+
+.table-view .column-header {
+    -fx-background-color: rgba(15, 23, 42, 0.9);
+    -fx-text-fill: #ffffff;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: rgba(15, 23, 42, 0.9);
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #334155;
+}
+
+/* Text Input Styling */
+.text-field {
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+.text-field:focused {
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+/* Label styling */
+.label {
+    -fx-text-fill: #ffffff;
+}
