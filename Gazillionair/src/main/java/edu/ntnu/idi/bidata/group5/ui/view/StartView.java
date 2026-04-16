@@ -69,7 +69,7 @@ public class StartView {
     StackPane centerPane = createCenterPane();
     root.setCenter(centerPane);
     root.setStyle(
-        "-fx-background-color: linear-gradient(to bottom right, #0f172a, "
+        "-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #0f172a, "
             + "#1e293b, #0f172a);");
   }
 
