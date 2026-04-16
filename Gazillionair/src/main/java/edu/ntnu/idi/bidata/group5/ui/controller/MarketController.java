@@ -4,64 +4,118 @@ import edu.ntnu.idi.bidata.group5.model.GameSession;
 import edu.ntnu.idi.bidata.group5.model.Purchase;
 import edu.ntnu.idi.bidata.group5.model.Sale;
 import edu.ntnu.idi.bidata.group5.model.Stock;
+import edu.ntnu.idi.bidata.group5.ui.view.MarketView;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
- * MarketController class is responsible for handling the market operations,
- * such as searching for stocks, buying and selling stocks.
- * It interacts with the GameSession to perform these operations and updates the
+ * MarketController is responsible for handling market operations such as
+ * searching for stocks, and executing buy/sell transactions.
+ * It connects the MarketView (UI) with the GameSession (business logic).
  */
 public class MarketController {
 
   private final GameSession session;
+  private final MarketView view;
+  private Consumer<Stock> onStockSelected;
 
   /**
-   * Constructor for the MarketController, initializes the GameSession.
+   * Constructs a MarketController with the given GameSession and MarketView.
    *
-   * @param session the GameSession to be used by the controller.
-   * @throws IllegalArgumentException if the session is null.
+   * @param session the GameSession containing market data
+   * @param view the MarketView for UI interaction
+   * @throws IllegalArgumentException if session or view is null
    */
-  public MarketController(GameSession session) {
+  public MarketController(GameSession session, MarketView view) {
     if (session == null) {
       throw new IllegalArgumentException("Session cannot be null");
     }
+    if (view == null) {
+      throw new IllegalArgumentException("View cannot be null");
+    }
     this.session = session;
+    this.view = view;
+    initializeBindings();
   }
 
   /**
-   * Searches for stocks based on the provided query string. The search is case-insensitive
-   * and matches stocks whose symbol or name contains the query string.
+   * Initializes event bindings between view and controller.
+   */
+  private void initializeBindings() {
+    view.getSearchInput()
+        .textProperty()
+        .addListener(
+            (obs, oldVal, newVal) -> {
+              List<Stock> results = search(newVal);
+              view.updateStocks(results);
+            });
+
+    view.setOnRowSelected(
+        stock -> {
+          if (onStockSelected != null) {
+            onStockSelected.accept(stock);
+          }
+        });
+
+    List<Stock> allStocks = session.getMarketStocks();
+    view.updateStocks(allStocks);
+  }
+
+  /**
+   * Searches for stocks based on symbol or company name.
    *
-   * @param query the search query string used to find matching stocks.
-   * @return a list of stocks that match the search query, or an empty list if no matches are found.
+   * @param query the search query string
+   * @return list of matching stocks (empty if none found)
    */
   public List<Stock> search(String query) {
     return session.searchStocks(query);
   }
 
   /**
-   * Buys a specified quantity of a stock identified by its symbol.
-   * The method interacts with the GameSession to execute the purchase and,
-   * returns a Purchase object containing details of the transaction.
+   * Executes a buy transaction.
    *
-   * @param symbol the stock symbol of the stock to be purchased.
-   * @param quantity the quantity of the stock to be purchased.
-   * @return a Purchase object containing details of the completed purchase transaction.
+   * @param symbol the stock symbol
+   * @param quantity the number of shares to buy
+   * @return Purchase containing transaction details
    */
   public Purchase buy(String symbol, int quantity) {
     return session.buy(symbol, quantity);
   }
 
   /**
-   * Sells a specified quantity of a stock identified by its symbol.
-   * The method interacts with the GameSession to execute the sale and,
-   * returns a Sale object containing details of the transaction.
+   * Executes a sell transaction.
    *
-   * @param symbol the stock symbol of the stock to be sold.
-   * @param quantity the quantity of the stock to be sold.
-   * @return a Sale object containing details of the completed sale transaction.
+   * @param symbol the stock symbol
+   * @param quantity the number of shares to sell
+   * @return Sale containing transaction details
    */
   public Sale sell(String symbol, int quantity) {
     return session.sell(symbol, quantity);
+  }
+
+  /**
+   * Sets the callback when a stock row is selected.
+   *
+   * @param callback the callback function to invoke with selected stock
+   */
+  public void setOnStockSelected(Consumer<Stock> callback) {
+    this.onStockSelected = callback;
+  }
+
+  /**
+   * Refreshes the stock table with current market data.
+   */
+  public void refreshStockTable() {
+    List<Stock> currentStocks = session.getMarketStocks();
+    view.updateStocks(currentStocks);
+  }
+
+  /**
+   * Gets the associated MarketView.
+   *
+   * @return the MarketView
+   */
+  public MarketView getView() {
+    return view;
   }
 }
