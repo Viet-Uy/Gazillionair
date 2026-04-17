@@ -4,6 +4,13 @@ import edu.ntnu.idi.bidata.group5.model.GameSession;
 import edu.ntnu.idi.bidata.group5.model.observer.ModelObserver;
 import edu.ntnu.idi.bidata.group5.ui.controller.MarketController;
 import edu.ntnu.idi.bidata.group5.ui.controller.NewsController;
+import edu.ntnu.idi.bidata.group5.ui.controller.PortfolioController;
+import edu.ntnu.idi.bidata.group5.ui.controller.StatsController;
+import edu.ntnu.idi.bidata.group5.ui.controller.TransactionsController;
+import edu.ntnu.idi.bidata.group5.ui.view.components.BuySellDialog;
+import edu.ntnu.idi.bidata.group5.ui.view.components.BuySellDialog.TradeAction;
+import edu.ntnu.idi.bidata.group5.ui.view.components.BuySellDialog.TradeRequest;
+import edu.ntnu.idi.bidata.group5.ui.view.components.ReceiptDialog;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -40,6 +47,7 @@ public class DashboardView implements ModelObserver {
   private Label holdingsLabel;
   private Label weekLabel;
   private Label statusBadge;
+  private Label weeklyChangeLabel;
 
   private Tab marketTab;
   private Tab portfolioTab;
@@ -49,6 +57,12 @@ public class DashboardView implements ModelObserver {
 
   private MarketController marketController;
   private NewsController newsController;
+  private PortfolioController portfolioController;
+  private TransactionsController transactionsController;
+  private StatsController statsController;
+  private PortfolioView portfolioView;
+  private TransactionsView transactionsView;
+  private StatsView statsView;
 
   /**
    * Constructs a DashboardView with empty placeholder layout.
@@ -153,11 +167,21 @@ public class DashboardView implements ModelObserver {
                     + "-fx-text-fill: white; "
                     + "-fx-padding: 8px 16px; "
                     + "-fx-background-radius: 8; "
-                    + "-fx-font-size: 14; "
-                    + "-fx-cursor: hand;");
+                     + "-fx-font-size: 14; "
+                     + "-fx-cursor: hand;");
     nextWeekBtn.setOnAction(e -> onNextWeek());
 
-    actionButtons.getChildren().add(nextWeekBtn);
+    Button sellAllExitBtn = new Button("Sell All & Exit");
+    sellAllExitBtn.setStyle(
+        "-fx-background-color: #ef4444; "
+            + "-fx-text-fill: white; "
+            + "-fx-padding: 8px 16px; "
+            + "-fx-background-radius: 8; "
+            + "-fx-font-size: 14; "
+            + "-fx-cursor: hand;");
+    sellAllExitBtn.setOnAction(e -> onSellAllAndExit());
+
+    actionButtons.getChildren().addAll(nextWeekBtn, sellAllExitBtn);
     HBox.setHgrow(playerInfo, Priority.ALWAYS);
 
     headerContent.getChildren().addAll(playerInfo, actionButtons);
@@ -181,7 +205,7 @@ public class DashboardView implements ModelObserver {
 
     VBox netWorthCard = createStatCard("Net Worth", formatMoney(session.getNetWorth()));
     VBox cashCard = createStatCard("Cash", formatMoney(session.getPlayer().getMoney()));
-    VBox holdingsCard = createStatCard("Holdings", "0");
+    VBox holdingsCard = createStatCard("Holdings", String.valueOf(session.getHoldings().size()));
     VBox weekCard = createStatCard("Week", String.valueOf(session.getCurrentWeek()));
 
     netWorthLabel = (Label) netWorthCard.getChildren().get(1);
@@ -199,7 +223,19 @@ public class DashboardView implements ModelObserver {
     grid.add(holdingsCard, 2, 0);
     grid.add(weekCard, 3, 0);
 
-    section.getChildren().add(grid);
+    weeklyChangeLabel = new Label("Weekly Change: $0.00");
+    weeklyChangeLabel.setStyle(
+        "-fx-background-color: rgba(15, 23, 42, 0.5); "
+            + "-fx-border-color: #334155; "
+            + "-fx-border-width: 1; "
+            + "-fx-background-radius: 8; "
+            + "-fx-border-radius: 8; "
+            + "-fx-padding: 10 14; "
+            + "-fx-text-fill: #94a3b8; "
+            + "-fx-font-size: 14; "
+            + "-fx-font-weight: 600;");
+
+    section.getChildren().addAll(grid, weeklyChangeLabel);
     return section;
   }
 
@@ -251,6 +287,14 @@ public class DashboardView implements ModelObserver {
     if (session != null) {
       MarketView marketView = new MarketView();
       marketController = new MarketController(session, marketView);
+      portfolioController = new PortfolioController(session);
+      transactionsController = new TransactionsController(session);
+      statsController = new StatsController(session);
+      portfolioView = new PortfolioView(portfolioController);
+      transactionsView = new TransactionsView(transactionsController);
+      statsView = new StatsView(statsController);
+
+      marketController.setOnStockSelected(this::onStockSelected);
 
       NewsView newsView = new NewsView();
       newsController = new NewsController(newsView);
@@ -305,6 +349,28 @@ public class DashboardView implements ModelObserver {
 
     placeholder.getChildren().add(label);
     return placeholder;
+  }
+
+  private void onStockSelected(edu.ntnu.idi.bidata.group5.model.Stock stock) {
+    if (stock == null) {
+      return;
+    }
+    try {
+      var requestOptional = BuySellDialog.show(stage, stock.getSymbol());
+      if (requestOptional.isEmpty()) {
+        return;
+      }
+      TradeRequest request = requestOptional.get();
+      if (request.action() == TradeAction.BUY) {
+        var purchase = marketController.buy(stock.getSymbol(), request.quantity());
+        ReceiptDialog.showTransaction(stage, purchase);
+      } else {
+        var sale = marketController.sell(stock.getSymbol(), request.quantity());
+        ReceiptDialog.showTransaction(stage, sale);
+      }
+    } catch (RuntimeException exception) {
+      ReceiptDialog.showError(stage, exception.getMessage());
+    }
   }
 
   /**
@@ -374,7 +440,19 @@ public class DashboardView implements ModelObserver {
    */
   private void onNextWeek() {
     if (session != null) {
+      BigDecimal before = session.getNetWorth();
       session.nextWeek();
+      BigDecimal after = session.getNetWorth();
+      setWeeklyChange(after.subtract(before));
+    }
+  }
+
+  private void onSellAllAndExit() {
+    if (session != null) {
+      session.sellAllHoldings();
+    }
+    if (stage != null) {
+      stage.close();
     }
   }
 
@@ -387,13 +465,46 @@ public class DashboardView implements ModelObserver {
     if (session != null) {
       netWorthLabel.setText(formatMoney(session.getNetWorth()));
       cashLabel.setText(formatMoney(session.getPlayer().getMoney()));
+      holdingsLabel.setText(String.valueOf(session.getHoldings().size()));
       weekLabel.setText(String.valueOf(session.getCurrentWeek()));
       statusBadge.setText(session.getPlayerStatus().toString());
 
       if (marketController != null) {
         marketController.refreshStockTable();
       }
+
+      if (portfolioView != null) {
+        portfolioView.refresh();
+      }
+      if (transactionsView != null) {
+        transactionsView.refresh();
+      }
+      if (statsView != null) {
+        statsView.refresh();
+      }
     }
+  }
+
+  private void setWeeklyChange(BigDecimal weeklyChange) {
+    String sign = weeklyChange.compareTo(BigDecimal.ZERO) > 0 ? "+" : "";
+    String text = "Weekly Change: " + sign + formatMoney(weeklyChange);
+    String color = "#cbd5e1";
+    if (weeklyChange.compareTo(BigDecimal.ZERO) > 0) {
+      color = "#22c55e";
+    } else if (weeklyChange.compareTo(BigDecimal.ZERO) < 0) {
+      color = "#ef4444";
+    }
+    weeklyChangeLabel.setText(text);
+    weeklyChangeLabel.setStyle(
+        "-fx-background-color: rgba(15, 23, 42, 0.5); "
+            + "-fx-border-color: #334155; "
+            + "-fx-border-width: 1; "
+            + "-fx-background-radius: 8; "
+            + "-fx-border-radius: 8; "
+            + "-fx-padding: 10 14; "
+            + "-fx-text-fill: " + color + "; "
+            + "-fx-font-size: 14; "
+            + "-fx-font-weight: 600;");
   }
 
   /**
