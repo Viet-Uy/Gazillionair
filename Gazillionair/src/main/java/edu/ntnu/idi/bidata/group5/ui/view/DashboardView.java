@@ -1,26 +1,25 @@
 package edu.ntnu.idi.bidata.group5.ui.view;
 
 import edu.ntnu.idi.bidata.group5.model.GameSession;
+import edu.ntnu.idi.bidata.group5.model.PlayerStatus;
 import edu.ntnu.idi.bidata.group5.model.observer.ModelObserver;
 import edu.ntnu.idi.bidata.group5.ui.controller.MarketController;
 import edu.ntnu.idi.bidata.group5.ui.controller.PortfolioController;
 import edu.ntnu.idi.bidata.group5.ui.controller.StatsController;
 import edu.ntnu.idi.bidata.group5.ui.controller.TransactionsController;
-import edu.ntnu.idi.bidata.group5.ui.view.components.BuySellDialog;
-import edu.ntnu.idi.bidata.group5.ui.view.components.BuySellDialog.TradeAction;
-import edu.ntnu.idi.bidata.group5.ui.view.components.BuySellDialog.TradeRequest;
-import edu.ntnu.idi.bidata.group5.ui.view.components.ReceiptDialog;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
@@ -28,7 +27,6 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-import java.math.BigDecimal;
 
 /**
  * DashboardView displays the main game interface after player starts a game.
@@ -47,6 +45,7 @@ public class DashboardView implements ModelObserver {
   private Label weekLabel;
   private Label statusBadge;
   private Label weeklyChangeLabel;
+  private Label overallPerformanceLabel;
 
   private Tab marketTab;
   private Tab portfolioTab;
@@ -78,7 +77,7 @@ public class DashboardView implements ModelObserver {
     this.session = session;
     this.stage = stage;
     this.root = new BorderPane();
-    initializeUI();
+    initializeUi();
     if (session != null) {
       session.addObserver(this);
     }
@@ -87,7 +86,7 @@ public class DashboardView implements ModelObserver {
   /**
    * Initializes the view UI with header, stats, and tabbed content.
    */
-  private void initializeUI() {
+  private void initializeUi() {
     root.setStyle(
             "-fx-background-color: linear-gradient(to bottom right, #0f172a, "
                     + "#1e293b, #0f172a);");
@@ -144,12 +143,7 @@ public class DashboardView implements ModelObserver {
     statusBadge.setFont(Font.font("System", FontWeight.MEDIUM, 12));
     statusBadge.setTextFill(Color.web("#ffffff"));
     statusBadge.setPadding(new Insets(4, 12, 4, 12));
-    statusBadge.setStyle(
-            "-fx-background-color: linear-gradient(to right, #64748b, #475569); "
-                    + "-fx-background-radius: 20; "
-                    + "-fx-border-color: #64748b; "
-                    + "-fx-border-width: 1; "
-                    + "-fx-border-radius: 20;");
+    applyStatusBadgeStyle(session.getPlayerStatus());
 
     HBox playerInfo = new HBox(12);
     playerInfo.setAlignment(Pos.CENTER_LEFT);
@@ -200,10 +194,11 @@ public class DashboardView implements ModelObserver {
     grid.setVgap(0);
     grid.setPrefHeight(100);
 
-    VBox netWorthCard = createStatCard("Net Worth", formatMoney(session.getNetWorth()));
-    VBox cashCard = createStatCard("Cash", formatMoney(session.getPlayer().getMoney()));
-    VBox holdingsCard = createStatCard("Holdings", String.valueOf(session.getHoldings().size()));
-    VBox weekCard = createStatCard("Week", String.valueOf(session.getCurrentWeek()));
+    final VBox netWorthCard = createStatCard("Net Worth", formatMoney(session.getNetWorth()));
+    final VBox cashCard = createStatCard("Cash", formatMoney(session.getPlayer().getMoney()));
+    final VBox holdingsCard =
+        createStatCard("Holdings", String.valueOf(session.getHoldings().size()));
+    final VBox weekCard = createStatCard("Week", String.valueOf(session.getCurrentWeek()));
 
     netWorthLabel = (Label) netWorthCard.getChildren().get(1);
     cashLabel = (Label) cashCard.getChildren().get(1);
@@ -232,7 +227,20 @@ public class DashboardView implements ModelObserver {
             + "-fx-font-size: 14; "
             + "-fx-font-weight: 600;");
 
-    section.getChildren().addAll(grid, weeklyChangeLabel);
+    overallPerformanceLabel = new Label();
+    overallPerformanceLabel.setStyle(
+        "-fx-background-color: rgba(15, 23, 42, 0.5); "
+            + "-fx-border-color: #334155; "
+            + "-fx-border-width: 1; "
+            + "-fx-background-radius: 8; "
+            + "-fx-border-radius: 8; "
+            + "-fx-padding: 10 14; "
+            + "-fx-text-fill: #cbd5e1; "
+            + "-fx-font-size: 14; "
+            + "-fx-font-weight: 600;");
+    setOverallPerformance();
+
+    section.getChildren().addAll(grid, weeklyChangeLabel, overallPerformanceLabel);
     return section;
   }
 
@@ -291,8 +299,6 @@ public class DashboardView implements ModelObserver {
       transactionsView = new TransactionsView(transactionsController);
       statsView = new StatsView(statsController);
 
-      marketController.setOnStockSelected(this::onStockSelected);
-
       marketTab = createTab("Market", marketView.getRoot());
       portfolioTab = createTab("Portfolio", portfolioView.getRoot());
       transactionsTab = createTab("Transactions", transactionsView.getRoot());
@@ -342,28 +348,6 @@ public class DashboardView implements ModelObserver {
     return placeholder;
   }
 
-  private void onStockSelected(edu.ntnu.idi.bidata.group5.model.Stock stock) {
-    if (stock == null) {
-      return;
-    }
-    try {
-      var requestOptional = BuySellDialog.show(stage, stock.getSymbol());
-      if (requestOptional.isEmpty()) {
-        return;
-      }
-      TradeRequest request = requestOptional.get();
-      if (request.action() == TradeAction.BUY) {
-        var purchase = marketController.buy(stock.getSymbol(), request.quantity());
-        ReceiptDialog.showTransaction(stage, purchase);
-      } else {
-        var sale = marketController.sell(stock.getSymbol(), request.quantity());
-        ReceiptDialog.showTransaction(stage, sale);
-      }
-    } catch (RuntimeException exception) {
-      ReceiptDialog.showError(stage, exception.getMessage());
-    }
-  }
-
   /**
    * Formats a BigDecimal as currency string.
    *
@@ -407,6 +391,8 @@ public class DashboardView implements ModelObserver {
       holdingsLabel.setText(String.valueOf(session.getHoldings().size()));
       weekLabel.setText(String.valueOf(session.getCurrentWeek()));
       statusBadge.setText(session.getPlayerStatus().toString());
+      applyStatusBadgeStyle(session.getPlayerStatus());
+      setOverallPerformance();
 
       if (marketController != null) {
         marketController.refreshStockTable();
@@ -444,6 +430,69 @@ public class DashboardView implements ModelObserver {
             + "-fx-text-fill: " + color + "; "
             + "-fx-font-size: 14; "
             + "-fx-font-weight: 600;");
+  }
+
+  private void setOverallPerformance() {
+    BigDecimal startingMoney = session.getPlayer().getStartingMoney();
+    BigDecimal gain = session.getNetWorth().subtract(startingMoney);
+    String sign = gain.compareTo(BigDecimal.ZERO) > 0 ? "+" : "";
+    BigDecimal percent = BigDecimal.ZERO;
+    if (startingMoney.compareTo(BigDecimal.ZERO) > 0) {
+      percent = gain.divide(startingMoney, 4, RoundingMode.HALF_UP)
+          .multiply(BigDecimal.valueOf(100));
+    }
+    String percentSign = percent.compareTo(BigDecimal.ZERO) > 0 ? "+" : "";
+    String color = "#cbd5e1";
+    if (gain.compareTo(BigDecimal.ZERO) > 0) {
+      color = "#22c55e";
+    } else if (gain.compareTo(BigDecimal.ZERO) < 0) {
+      color = "#ef4444";
+    }
+    overallPerformanceLabel.setText(
+        "Overall: "
+            + sign
+            + formatMoney(gain)
+            + " ("
+            + percentSign
+            + String.format("%.2f", percent)
+            + "%)");
+    overallPerformanceLabel.setStyle(
+        "-fx-background-color: rgba(15, 23, 42, 0.5); "
+            + "-fx-border-color: #334155; "
+            + "-fx-border-width: 1; "
+            + "-fx-background-radius: 8; "
+            + "-fx-border-radius: 8; "
+            + "-fx-padding: 10 14; "
+            + "-fx-text-fill: " + color + "; "
+            + "-fx-font-size: 14; "
+            + "-fx-font-weight: 600;");
+  }
+
+  private void applyStatusBadgeStyle(PlayerStatus status) {
+    String style;
+    if (status == PlayerStatus.SPECULATOR) {
+      style =
+          "-fx-background-color: linear-gradient(to right, #f59e0b, #f97316); "
+              + "-fx-background-radius: 20; "
+              + "-fx-border-color: #f59e0b; "
+              + "-fx-border-width: 1; "
+              + "-fx-border-radius: 20;";
+    } else if (status == PlayerStatus.INVESTOR) {
+      style =
+          "-fx-background-color: linear-gradient(to right, #22c55e, #10b981); "
+              + "-fx-background-radius: 20; "
+              + "-fx-border-color: #22c55e; "
+              + "-fx-border-width: 1; "
+              + "-fx-border-radius: 20;";
+    } else {
+      style =
+          "-fx-background-color: linear-gradient(to right, #64748b, #475569); "
+              + "-fx-background-radius: 20; "
+              + "-fx-border-color: #64748b; "
+              + "-fx-border-width: 1; "
+              + "-fx-border-radius: 20;";
+    }
+    statusBadge.setStyle(style);
   }
 
   /**

@@ -34,8 +34,19 @@ public class TransactionsView {
   }
 
   private void initialize() {
-    root.setStyle("-fx-padding: 16;");
+    root.setStyle(
+        "-fx-padding: 16; "
+            + "-fx-background-color: linear-gradient(to bottom, rgba(15, 23, 42, 0.60), "
+            + "rgba(30, 41, 59, 0.75)); "
+            + "-fx-background-radius: 12;");
     summaryLabel.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 14;");
+    transactionsList.setStyle(
+        "-fx-control-inner-background: rgba(15, 23, 42, 0.70); "
+            + "-fx-background-color: rgba(15, 23, 42, 0.70); "
+            + "-fx-border-color: #334155; "
+            + "-fx-border-width: 1; "
+            + "-fx-border-radius: 8; "
+            + "-fx-background-radius: 8;");
     root.getChildren().addAll(summaryLabel, transactionsList);
     refresh();
   }
