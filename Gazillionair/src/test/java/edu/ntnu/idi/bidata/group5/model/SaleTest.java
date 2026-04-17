@@ -255,7 +255,8 @@ class SaleTest {
     assertEquals(1, testPlayer.getPortfolio().getShares().size());
     assertEquals(
         0,
-        testPlayer.getPortfolio().getShares().getFirst().getQuantity().compareTo(BigDecimal.valueOf(8)));
+        testPlayer.getPortfolio().getShares().getFirst().getQuantity()
+            .compareTo(BigDecimal.valueOf(8)));
   }
 
   @Test

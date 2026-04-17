@@ -91,7 +91,8 @@ class PortfolioTest {
     List<Share> shares = portfolio.getShares();
     shares.add(new Share(tesla, new BigDecimal("5"), new BigDecimal("200")));
 
-    assertEquals(1, portfolio.getShares().size(), "Adding to returned list should not modify portfolio");
+    assertEquals(
+        1, portfolio.getShares().size(), "Adding to returned list should not modify portfolio");
   }
 
   @Test
