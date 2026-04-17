@@ -39,7 +39,7 @@ public class NewsCard {
     this.metaLabel = new Label();
     this.sentimentBadge = new Label();
 
-    initializeUI(affectedStocks, week, sentiment);
+    initializeUi(affectedStocks, week, sentiment);
   }
 
   /**
@@ -49,7 +49,7 @@ public class NewsCard {
    * @param week week number
    * @param sentiment sentiment indicator
    */
-  private void initializeUI(String affectedStocks, int week, String sentiment) {
+  private void initializeUi(String affectedStocks, int week, String sentiment) {
     root.setPadding(new Insets(16));
     root.setStyle(
         "-fx-background-color: rgba(30, 41, 59, 0.6); "
