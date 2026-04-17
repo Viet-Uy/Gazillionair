@@ -2,13 +2,13 @@ package edu.ntnu.idi.bidata.group5.ui.view;
 
 import edu.ntnu.idi.bidata.group5.model.Stock;
 import edu.ntnu.idi.bidata.group5.ui.controller.StatsController;
+import java.math.BigDecimal;
+import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * View for showing market gainers and losers.

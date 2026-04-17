@@ -24,7 +24,13 @@ public class Exchange {
   private static final BigDecimal MIN_PRICE = new BigDecimal("0.01");
 
   /** Maximum percentage change applied to a stock price per week. */
-  private static final BigDecimal MAX_CHANGE = new BigDecimal("0.10"); // 10%
+  private static final BigDecimal NORMAL_MAX_CHANGE = new BigDecimal("0.04"); // 4%
+  private static final BigDecimal BULL_SPIKE_MIN = new BigDecimal("0.08"); // 8%
+  private static final BigDecimal BULL_SPIKE_MAX = new BigDecimal("0.18"); // 18%
+  private static final BigDecimal BEAR_DROP_MIN = new BigDecimal("0.08"); // 8%
+  private static final BigDecimal BEAR_DROP_MAX = new BigDecimal("0.14"); // 14%
+  private static final double BULL_SPIKE_CHANCE = 0.06; // 6%
+  private static final double BEAR_DROP_CHANCE = 0.03; // 3%
 
   /** The name of the exchange. */
   private final String name;
@@ -227,8 +233,7 @@ public class Exchange {
   }
 
   private BigDecimal applyRandomChange(BigDecimal current) {
-    double sign = (random.nextDouble() * 2.0) - 1.0;
-    BigDecimal changePercent = MAX_CHANGE.multiply(BigDecimal.valueOf(sign));
+    BigDecimal changePercent = randomChangePercent();
 
     BigDecimal multiplier = BigDecimal.ONE.add(changePercent);
     BigDecimal newPrice = current.multiply(multiplier);
@@ -238,5 +243,21 @@ public class Exchange {
     }
 
     return newPrice.setScale(2, RoundingMode.HALF_UP);
+  }
+
+  private BigDecimal randomChangePercent() {
+    double roll = random.nextDouble();
+    if (roll < BULL_SPIKE_CHANCE) {
+      return randomBetween(BULL_SPIKE_MIN, BULL_SPIKE_MAX);
+    }
+    if (roll < BULL_SPIKE_CHANCE + BEAR_DROP_CHANCE) {
+      return randomBetween(BEAR_DROP_MIN, BEAR_DROP_MAX).negate();
+    }
+    double sign = (random.nextDouble() * 2.0) - 1.0;
+    return NORMAL_MAX_CHANGE.multiply(BigDecimal.valueOf(sign));
+  }
+
+  private BigDecimal randomBetween(BigDecimal min, BigDecimal max) {
+    return min.add(max.subtract(min).multiply(BigDecimal.valueOf(random.nextDouble())));
   }
 }
