@@ -6,6 +6,8 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,38 +27,58 @@ public class StockFileHandler {
    * @throws IOException if the file format is invalid or an I/O error occurs
    */
   public List<Stock> readFromFile(String filePath) throws IOException {
+    try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+      return parseStocks(reader);
+    }
+  }
+
+  /**
+   * Reads stock data from a classpath resource.
+   *
+   * @param resourcePath classpath resource path (for example "/sp500.csv")
+   * @return a list of stocks read from the resource
+   * @throws IOException if resource is missing, invalid, or unreadable
+   */
+  public List<Stock> readFromResource(String resourcePath) throws IOException {
+    InputStream inputStream = getClass().getResourceAsStream(resourcePath);
+    if (inputStream == null) {
+      throw new IOException("Resource not found: " + resourcePath);
+    }
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+      return parseStocks(reader);
+    }
+  }
+
+  private List<Stock> parseStocks(BufferedReader reader) throws IOException {
     List<Stock> stocks = new ArrayList<>();
     int lineNumber = 0;
+    String line;
 
-    try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-      String line;
+    while ((line = reader.readLine()) != null) {
+      lineNumber++;
 
-      while ((line = reader.readLine()) != null) {
-        lineNumber++;
+      if (line.isBlank() || line.startsWith("#")) {
+        continue;
+      }
 
-        if (line.isBlank() || line.startsWith("#")) {
-          continue;
-        }
+      String[] parts = line.split(",");
 
-        String[] parts = line.split(",");
+      if (parts.length != 3) {
+        throw new IOException("Invalid format at line " + lineNumber);
+      }
 
-        if (parts.length != 3) {
-          throw new IOException("Invalid format at line " + lineNumber);
-        }
+      String symbol = parts[0].trim();
+      String name = parts[1].trim();
 
-        String symbol = parts[0].trim();
-        String name = parts[1].trim();
+      if (symbol.isEmpty() || name.isEmpty()) {
+        throw new IOException("Empty field at line " + lineNumber);
+      }
 
-        if (symbol.isEmpty() || name.isEmpty()) {
-          throw new IOException("Empty field at line " + lineNumber);
-        }
-
-        try {
-          BigDecimal price = new BigDecimal(parts[2].trim());
-          stocks.add(new Stock(symbol, name, price));
-        } catch (IllegalArgumentException e) {
-          throw new IOException("Bad data at line " + lineNumber, e);
-        }
+      try {
+        BigDecimal price = new BigDecimal(parts[2].trim());
+        stocks.add(new Stock(symbol, name, price));
+      } catch (IllegalArgumentException e) {
+        throw new IOException("Bad data at line " + lineNumber, e);
       }
     }
 
