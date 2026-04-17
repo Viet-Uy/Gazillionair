@@ -4,6 +4,7 @@ import edu.ntnu.idi.bidata.group5.model.GameSession;
 import edu.ntnu.idi.bidata.group5.model.PlayerStatus;
 import edu.ntnu.idi.bidata.group5.model.observer.ModelObserver;
 import edu.ntnu.idi.bidata.group5.ui.controller.MarketController;
+import edu.ntnu.idi.bidata.group5.ui.controller.NewsController;
 import edu.ntnu.idi.bidata.group5.ui.controller.PortfolioController;
 import edu.ntnu.idi.bidata.group5.ui.controller.StatsController;
 import edu.ntnu.idi.bidata.group5.ui.controller.TransactionsController;
@@ -51,8 +52,10 @@ public class DashboardView implements ModelObserver {
   private Tab portfolioTab;
   private Tab transactionsTab;
   private Tab statsTab;
+  private Tab newsTab;
 
   private MarketController marketController;
+  private NewsController newsController;
   private PortfolioController portfolioController;
   private TransactionsController transactionsController;
   private StatsController statsController;
@@ -88,8 +91,8 @@ public class DashboardView implements ModelObserver {
    */
   private void initializeUi() {
     root.setStyle(
-            "-fx-background-color: linear-gradient(to bottom right, #0f172a, "
-                    + "#1e293b, #0f172a);");
+        "-fx-background-color: linear-gradient(to bottom right, #0f172a, "
+            + "#1e293b, #0f172a);");
 
     if (session != null) {
       VBox header = createHeader();
@@ -120,19 +123,24 @@ public class DashboardView implements ModelObserver {
     VBox header = new VBox();
     header.setPadding(new Insets(16, 24, 16, 24));
     header.setStyle(
-            "-fx-background-color: rgba(30, 41, 59, 0.8); "
-                    + "-fx-border-color: #334155; "
-                    + "-fx-border-width: 0 0 1 0;");
+        "-fx-background-color: rgba(30, 41, 59, 0.8); "
+            + "-fx-border-color: #334155; "
+            + "-fx-border-width: 0 0 1 0;");
 
     HBox headerContent = new HBox(20);
     headerContent.setAlignment(Pos.CENTER_LEFT);
 
     Circle logo = new Circle(20);
-    LinearGradient gradient = new LinearGradient(
-            0.0, 0.0, 1.0, 1.0, true, null,
+    LinearGradient gradient =
+        new LinearGradient(
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            true,
+            null,
             new Stop(0.0, Color.web("#22c55e")),
-            new Stop(1.0, Color.web("#10b981"))
-    );
+            new Stop(1.0, Color.web("#10b981")));
     logo.setFill(gradient);
 
     Label playerName = new Label(session.getPlayer().getName());
@@ -154,12 +162,12 @@ public class DashboardView implements ModelObserver {
 
     Button nextWeekBtn = new Button("Next Week");
     nextWeekBtn.setStyle(
-            "-fx-background-color: #22c55e; "
-                    + "-fx-text-fill: white; "
-                    + "-fx-padding: 8px 16px; "
-                    + "-fx-background-radius: 8; "
-                     + "-fx-font-size: 14; "
-                     + "-fx-cursor: hand;");
+        "-fx-background-color: #22c55e; "
+            + "-fx-text-fill: white; "
+            + "-fx-padding: 8px 16px; "
+            + "-fx-background-radius: 8; "
+            + "-fx-font-size: 14; "
+            + "-fx-cursor: hand;");
     nextWeekBtn.setOnAction(e -> onNextWeek());
 
     Button sellAllExitBtn = new Button("Sell All & Exit");
@@ -247,7 +255,7 @@ public class DashboardView implements ModelObserver {
   /**
    * Creates a single stat card with label and value.
    *
-   * @param label the stat label (e.g., "Net Worth")
+   * @param label the stat label
    * @param value the stat value
    * @return VBox containing the stat card
    */
@@ -255,11 +263,11 @@ public class DashboardView implements ModelObserver {
     VBox card = new VBox(8);
     card.setPadding(new Insets(16));
     card.setStyle(
-            "-fx-background-color: rgba(15, 23, 42, 0.5); "
-                    + "-fx-border-color: #334155; "
-                    + "-fx-border-width: 1; "
-                    + "-fx-background-radius: 8; "
-                    + "-fx-border-radius: 8;");
+        "-fx-background-color: rgba(15, 23, 42, 0.5); "
+            + "-fx-border-color: #334155; "
+            + "-fx-border-width: 1; "
+            + "-fx-background-radius: 8; "
+            + "-fx-border-radius: 8;");
 
     Label labelText = new Label(label);
     labelText.setFont(Font.font("System", FontWeight.MEDIUM, 12));
@@ -274,17 +282,17 @@ public class DashboardView implements ModelObserver {
   }
 
   /**
-   * Creates the tabbed navigation pane for Market, Portfolio, Transactions, Stats.
+   * Creates the tabbed navigation pane for Market, News, Portfolio, Transactions, Stats.
    *
    * @return TabPane with all tabs
    */
   private TabPane createTabPane() {
     TabPane tabPane = new TabPane();
     tabPane.setStyle(
-            "-fx-padding: 0; "
-                    + "-fx-background-color: rgba(30, 41, 59, 0.5); "
-                    + "-fx-border-color: #334155; "
-                    + "-fx-border-width: 1 0 0 0;");
+        "-fx-padding: 0; "
+            + "-fx-background-color: rgba(30, 41, 59, 0.5); "
+            + "-fx-border-color: #334155; "
+            + "-fx-border-width: 1 0 0 0;");
     tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
     tabPane.setMinHeight(200);
     tabPane.setPrefWidth(Double.MAX_VALUE);
@@ -295,29 +303,36 @@ public class DashboardView implements ModelObserver {
       portfolioController = new PortfolioController(session);
       transactionsController = new TransactionsController(session);
       statsController = new StatsController(session);
+
       portfolioView = new PortfolioView(portfolioController);
       transactionsView = new TransactionsView(transactionsController);
       statsView = new StatsView(statsController);
 
+      NewsView newsView = new NewsView();
+      newsController = new NewsController(newsView);
+      populateMockNews(newsView);
+
       marketTab = createTab("Market", marketView.getRoot());
+      newsTab = createTab("News", newsView.getRoot());
       portfolioTab = createTab("Portfolio", portfolioView.getRoot());
       transactionsTab = createTab("Transactions", transactionsView.getRoot());
       statsTab = createTab("Stats", statsView.getRoot());
     } else {
       marketTab = createTab("Market", createPlaceholder("Market View"));
+      newsTab = createTab("News", createPlaceholder("News View"));
       portfolioTab = createTab("Portfolio", createPlaceholder("Portfolio View"));
       transactionsTab = createTab("Transactions", createPlaceholder("Transactions View"));
       statsTab = createTab("Stats", createPlaceholder("Stats View"));
     }
 
-    tabPane.getTabs().addAll(marketTab, portfolioTab, transactionsTab, statsTab);
+    tabPane.getTabs().addAll(marketTab, newsTab, portfolioTab, transactionsTab, statsTab);
     return tabPane;
   }
 
   /**
    * Creates a single tab with the given title and content.
    *
-   * @param title   the tab title
+   * @param title the tab title
    * @param content the tab content node
    * @return Tab with the given configuration
    */
@@ -330,7 +345,7 @@ public class DashboardView implements ModelObserver {
   }
 
   /**
-   * Creates a placeholder content node (for future view implementation).
+   * Creates a placeholder content node.
    *
    * @param text the placeholder text
    * @return VBox with placeholder content
@@ -359,6 +374,53 @@ public class DashboardView implements ModelObserver {
   }
 
   /**
+   * Populates the news view with mock news data for testing.
+   *
+   * @param newsView the NewsView to populate
+   */
+  private void populateMockNews(NewsView newsView) {
+    newsView.addNewsCard(
+        "Supply Chain Volatility Escalates",
+        "Industry analysts report increased logistical pressure affecting multiple commodity "
+            + "suppliers. Global container rates have experienced notable fluctuation.",
+        "IND, AER, TRN",
+        2,
+        "negative");
+
+    newsView.addNewsCard(
+        "Tech Sector Infrastructure Under Scrutiny",
+        "New compliance requirements proposed for cloud service providers. Implementation "
+            + "timeline remains uncertain pending legislative review.",
+        "TECH, SOFT",
+        2,
+        "neutral");
+
+    newsView.addNewsCard(
+        "Consumer Sentiment Shows Mixed Signals",
+        "Latest market research indicates divergent spending patterns across demographics. "
+            + "Discretionary spending categories demonstrate uneven momentum.",
+        "CONS, RET",
+        2,
+        "neutral");
+
+    newsView.addNewsCard(
+        "Energy Markets Experience Compression",
+        "Fuel commodity prices exhibit compressed volatility amid geopolitical uncertainty. "
+            + "Hedging activity accelerates across energy sector participants.",
+        "ENRG, OIL",
+        2,
+        "negative");
+
+    newsView.addNewsCard(
+        "Market-Wide Momentum Suggests Expansion",
+        "Macroeconomic indicators reflect tentative optimism. Several leading indices show "
+            + "early signs of upward trajectory formation.",
+        "Market-wide",
+        2,
+        "positive");
+  }
+
+  /**
    * Handles Next Week button action.
    */
   private void onNextWeek() {
@@ -380,7 +442,7 @@ public class DashboardView implements ModelObserver {
   }
 
   /**
-   * Called when the model (GameSession) changes.
+   * Called when the model changes.
    * Updates all stat cards and UI elements.
    */
   @Override
@@ -427,7 +489,9 @@ public class DashboardView implements ModelObserver {
             + "-fx-background-radius: 8; "
             + "-fx-border-radius: 8; "
             + "-fx-padding: 10 14; "
-            + "-fx-text-fill: " + color + "; "
+            + "-fx-text-fill: "
+            + color
+            + "; "
             + "-fx-font-size: 14; "
             + "-fx-font-weight: 600;");
   }
@@ -438,8 +502,8 @@ public class DashboardView implements ModelObserver {
     String sign = gain.compareTo(BigDecimal.ZERO) > 0 ? "+" : "";
     BigDecimal percent = BigDecimal.ZERO;
     if (startingMoney.compareTo(BigDecimal.ZERO) > 0) {
-      percent = gain.divide(startingMoney, 4, RoundingMode.HALF_UP)
-          .multiply(BigDecimal.valueOf(100));
+      percent =
+          gain.divide(startingMoney, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
     }
     String percentSign = percent.compareTo(BigDecimal.ZERO) > 0 ? "+" : "";
     String color = "#cbd5e1";
@@ -463,7 +527,9 @@ public class DashboardView implements ModelObserver {
             + "-fx-background-radius: 8; "
             + "-fx-border-radius: 8; "
             + "-fx-padding: 10 14; "
-            + "-fx-text-fill: " + color + "; "
+            + "-fx-text-fill: "
+            + color
+            + "; "
             + "-fx-font-size: 14; "
             + "-fx-font-weight: 600;");
   }
@@ -513,4 +579,3 @@ public class DashboardView implements ModelObserver {
     return session;
   }
 }
-
