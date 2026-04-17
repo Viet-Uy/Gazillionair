@@ -3,6 +3,7 @@ package edu.ntnu.idi.bidata.group5.ui.view;
 import edu.ntnu.idi.bidata.group5.model.GameSession;
 import edu.ntnu.idi.bidata.group5.model.observer.ModelObserver;
 import edu.ntnu.idi.bidata.group5.ui.controller.MarketController;
+import edu.ntnu.idi.bidata.group5.ui.controller.NewsController;
 import edu.ntnu.idi.bidata.group5.ui.controller.PortfolioController;
 import edu.ntnu.idi.bidata.group5.ui.controller.StatsController;
 import edu.ntnu.idi.bidata.group5.ui.controller.TransactionsController;
@@ -52,8 +53,10 @@ public class DashboardView implements ModelObserver {
   private Tab portfolioTab;
   private Tab transactionsTab;
   private Tab statsTab;
+  private Tab newsTab;
 
   private MarketController marketController;
+  private NewsController newsController;
   private PortfolioController portfolioController;
   private TransactionsController transactionsController;
   private StatsController statsController;
@@ -293,18 +296,24 @@ public class DashboardView implements ModelObserver {
 
       marketController.setOnStockSelected(this::onStockSelected);
 
+      NewsView newsView = new NewsView();
+      newsController = new NewsController(newsView);
+      populateMockNews(newsView);
+
       marketTab = createTab("Market", marketView.getRoot());
-      portfolioTab = createTab("Portfolio", portfolioView.getRoot());
-      transactionsTab = createTab("Transactions", transactionsView.getRoot());
-      statsTab = createTab("Stats", statsView.getRoot());
+      newsTab = createTab("News", newsView.getRoot());
+      portfolioTab = createTab("Portfolio", createPlaceholder("Portfolio View"));
+      transactionsTab = createTab("Transactions", createPlaceholder("Transactions View"));
+      statsTab = createTab("Stats", createPlaceholder("Stats View"));
     } else {
       marketTab = createTab("Market", createPlaceholder("Market View"));
+      newsTab = createTab("News", createPlaceholder("News View"));
       portfolioTab = createTab("Portfolio", createPlaceholder("Portfolio View"));
       transactionsTab = createTab("Transactions", createPlaceholder("Transactions View"));
       statsTab = createTab("Stats", createPlaceholder("Stats View"));
     }
 
-    tabPane.getTabs().addAll(marketTab, portfolioTab, transactionsTab, statsTab);
+    tabPane.getTabs().addAll(marketTab, newsTab, portfolioTab, transactionsTab, statsTab);
     return tabPane;
   }
 
@@ -372,6 +381,58 @@ public class DashboardView implements ModelObserver {
    */
   private String formatMoney(BigDecimal amount) {
     return String.format("$%.2f", amount);
+  }
+
+  /**
+   * Populates the news view with mock news data for testing.
+   *
+   * @param newsView the NewsView to populate
+   */
+  private void populateMockNews(NewsView newsView) {
+    newsView.addNewsCard(
+        "Supply Chain Volatility Escalates",
+        "Industry analysts report increased logistical pressure affecting multiple commodity "
+            + "suppliers. Global container rates have experienced notable fluctuation.",
+        "IND, AER, TRN",
+        2,
+        "negative"
+    );
+
+    newsView.addNewsCard(
+        "Tech Sector Infrastructure Under Scrutiny",
+        "New compliance requirements proposed for cloud service providers. Implementation "
+            + "timeline remains uncertain pending legislative review.",
+        "TECH, SOFT",
+        2,
+        "neutral"
+    );
+
+    newsView.addNewsCard(
+        "Consumer Sentiment Shows Mixed Signals",
+        "Latest market research indicates divergent spending patterns across demographics. "
+            + "Discretionary spending categories demonstrate uneven momentum.",
+        "CONS, RET",
+        2,
+        "neutral"
+    );
+
+    newsView.addNewsCard(
+        "Energy Markets Experience Compression",
+        "Fuel commodity prices exhibit compressed volatility amid geopolitical uncertainty. "
+            + "Hedging activity accelerates across energy sector participants.",
+        "ENRG, OIL",
+        2,
+        "negative"
+    );
+
+    newsView.addNewsCard(
+        "Market-Wide Momentum Suggests Expansion",
+        "Macroeconomic indicators reflect tentative optimism. Several leading indices show "
+            + "early signs of upward trajectory formation.",
+        "Market-wide",
+        2,
+        "positive"
+    );
   }
 
   /**
