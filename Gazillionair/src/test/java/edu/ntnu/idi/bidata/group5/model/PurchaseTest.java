@@ -1,11 +1,13 @@
 package edu.ntnu.idi.bidata.group5.model;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class PurchaseTest {
 
@@ -18,7 +20,6 @@ class PurchaseTest {
     testPlayer = new Player("TestPlayer", new BigDecimal("10000"));
   }
 
-  // Positive tests - Happy path
   @Test
   void commit_purchase_updates_committed_flag() {
     Share share = new Share(testStock, new BigDecimal("10"), new BigDecimal("100"));
@@ -39,7 +40,8 @@ class PurchaseTest {
     BigDecimal initialMoney = testPlayer.getMoney();
     purchase.commit(testPlayer);
 
-    assertTrue(testPlayer.getMoney().compareTo(initialMoney) < 0,
+    assertTrue(
+        testPlayer.getMoney().compareTo(initialMoney) < 0,
         "Player money should be deducted after purchase");
   }
 
@@ -48,12 +50,20 @@ class PurchaseTest {
     Share share = new Share(testStock, new BigDecimal("10"), new BigDecimal("100"));
     Purchase purchase = new Purchase(share, 1);
 
-    assertEquals(0, testPlayer.getPortfolio().getShares().size(), "Portfolio should be empty initially");
+    assertEquals(
+        0,
+        testPlayer.getPortfolio().getShares().size(),
+        "Portfolio should be empty initially");
 
     purchase.commit(testPlayer);
 
-    assertEquals(1, testPlayer.getPortfolio().getShares().size(), "Share should be added to portfolio");
-    assertTrue(testPlayer.getPortfolio().contains(share), "Portfolio should contain the purchased share");
+    assertEquals(
+        1,
+        testPlayer.getPortfolio().getShares().size(),
+        "Share should be added to portfolio");
+    assertTrue(
+        testPlayer.getPortfolio().contains(share),
+        "Portfolio should contain the purchased share");
   }
 
   @Test
@@ -65,8 +75,12 @@ class PurchaseTest {
 
     purchase.commit(testPlayer);
 
-    assertFalse(testPlayer.getTransactionArchive().isEmpty(), "Archive should not be empty after commit");
-    assertEquals(1, testPlayer.getTransactionArchive().getPurchases().size(),
+    assertFalse(
+        testPlayer.getTransactionArchive().isEmpty(),
+        "Archive should not be empty after commit");
+    assertEquals(
+        1,
+        testPlayer.getTransactionArchive().getPurchases().size(),
         "Archive should contain one purchase");
   }
 
@@ -79,7 +93,9 @@ class PurchaseTest {
     purchase.commit(richPlayer);
 
     assertTrue(purchase.isCommitted(), "Large quantity purchase should be committed");
-    assertTrue(richPlayer.getPortfolio().contains(share), "Portfolio should contain large quantity share");
+    assertTrue(
+        richPlayer.getPortfolio().contains(share),
+        "Portfolio should contain large quantity share");
   }
 
   @Test
@@ -90,7 +106,9 @@ class PurchaseTest {
     purchase.commit(testPlayer);
 
     assertTrue(purchase.isCommitted(), "Decimal quantity purchase should be committed");
-    assertTrue(testPlayer.getPortfolio().contains(share), "Portfolio should contain decimal quantity share");
+    assertTrue(
+        testPlayer.getPortfolio().contains(share),
+        "Portfolio should contain decimal quantity share");
   }
 
   @Test
@@ -115,13 +133,13 @@ class PurchaseTest {
     assertTrue(purchase.isCommitted(), "Large week number purchase should be committed");
   }
 
-  // Negative tests - Error cases
   @Test
   void commit_purchase_with_null_player_throws_exception() {
     Share share = new Share(testStock, new BigDecimal("10"), new BigDecimal("100"));
     Purchase purchase = new Purchase(share, 1);
 
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(
+        IllegalArgumentException.class,
         () -> purchase.commit(null),
         "Commit with null player should throw IllegalArgumentException");
   }
@@ -133,7 +151,8 @@ class PurchaseTest {
 
     purchase.commit(testPlayer);
 
-    assertThrows(IllegalStateException.class,
+    assertThrows(
+        IllegalStateException.class,
         () -> purchase.commit(testPlayer),
         "Committing already committed purchase should throw IllegalStateException");
   }
@@ -145,24 +164,26 @@ class PurchaseTest {
 
     Player poorPlayer = new Player("PoorPlayer", new BigDecimal("100"));
 
-    assertThrows(IllegalStateException.class,
+    assertThrows(
+        IllegalStateException.class,
         () -> purchase.commit(poorPlayer),
         "Commit with insufficient funds should throw IllegalStateException");
   }
 
   @Test
   void commit_purchase_with_exact_available_funds() {
-    // Calculate exact cost including commission
     Share share = new Share(testStock, new BigDecimal("10"), new BigDecimal("100"));
     Purchase purchase = new Purchase(share, 1);
 
-    BigDecimal expectedCost = new BigDecimal("1005"); // (10 * 100) + 0.5% commission = 1005
+    BigDecimal expectedCost = new BigDecimal("1005");
     Player exactPlayer = new Player("ExactPlayer", expectedCost);
 
     purchase.commit(exactPlayer);
 
     assertTrue(purchase.isCommitted(), "Purchase with exact available funds should be committed");
-    assertEquals(0, exactPlayer.getMoney().compareTo(BigDecimal.ZERO),
+    assertEquals(
+        0,
+        exactPlayer.getMoney().compareTo(BigDecimal.ZERO),
         "Player money should be exactly zero");
   }
 
@@ -172,14 +193,15 @@ class PurchaseTest {
     Purchase purchase = new Purchase(share, 1);
 
     BigDecimal expectedCost = new BigDecimal("1005");
-    Player slightlyPoorPlayer = new Player("SlightlyPoor", expectedCost.subtract(BigDecimal.valueOf(0.01)));
+    Player slightlyPoorPlayer =
+        new Player("SlightlyPoor", expectedCost.subtract(BigDecimal.valueOf(0.01)));
 
-    assertThrows(IllegalStateException.class,
+    assertThrows(
+        IllegalStateException.class,
         () -> purchase.commit(slightlyPoorPlayer),
         "Commit with just insufficient funds should throw exception");
   }
 
-  // Boundary tests - Edge cases
   @Test
   void purchase_with_very_small_quantity() {
     Share share = new Share(testStock, new BigDecimal("0.01"), new BigDecimal("100"));

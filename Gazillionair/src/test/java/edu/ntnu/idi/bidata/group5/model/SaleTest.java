@@ -1,11 +1,13 @@
 package edu.ntnu.idi.bidata.group5.model;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class SaleTest {
 
@@ -18,7 +20,6 @@ class SaleTest {
     testPlayer = new Player("TestPlayer", new BigDecimal("10000"));
   }
 
-  // Positive tests - Happy path
   @Test
   void commit_sale_updates_committed_flag() {
     Share share = new Share(testStock, new BigDecimal("10"), new BigDecimal("100"));
@@ -43,7 +44,8 @@ class SaleTest {
     Sale sale = new Sale(share, 1);
     sale.commit(testPlayer);
 
-    assertTrue(testPlayer.getMoney().compareTo(initialMoney) > 0,
+    assertTrue(
+        testPlayer.getMoney().compareTo(initialMoney) > 0,
         "Player money should increase after sale");
   }
 
@@ -52,13 +54,19 @@ class SaleTest {
     Share share = new Share(testStock, new BigDecimal("10"), new BigDecimal("100"));
     testPlayer.getPortfolio().addShare(share);
 
-    assertEquals(1, testPlayer.getPortfolio().getShares().size(), "Portfolio should have one share");
+    assertEquals(
+        1, testPlayer.getPortfolio().getShares().size(), "Portfolio should have one share");
 
     Sale sale = new Sale(share, 1);
     sale.commit(testPlayer);
 
-    assertEquals(0, testPlayer.getPortfolio().getShares().size(), "Portfolio should be empty after sale");
-    assertFalse(testPlayer.getPortfolio().contains(share), "Portfolio should not contain sold share");
+    assertEquals(
+        0,
+        testPlayer.getPortfolio().getShares().size(),
+        "Portfolio should be empty after sale");
+    assertFalse(
+        testPlayer.getPortfolio().contains(share),
+        "Portfolio should not contain sold share");
   }
 
   @Test
@@ -71,14 +79,18 @@ class SaleTest {
     Sale sale = new Sale(share, 1);
     sale.commit(testPlayer);
 
-    assertFalse(testPlayer.getTransactionArchive().isEmpty(), "Archive should not be empty after commit");
-    assertEquals(1, testPlayer.getTransactionArchive().getSales().size(),
+    assertFalse(
+        testPlayer.getTransactionArchive().isEmpty(),
+        "Archive should not be empty after commit");
+    assertEquals(
+        1,
+        testPlayer.getTransactionArchive().getSales().size(),
         "Archive should contain one sale");
   }
 
   @Test
   void commit_sale_with_profit() {
-    testStock.addNewSalesPrice(new BigDecimal("150")); // Price increased from 100 to 150
+    testStock.addNewSalesPrice(new BigDecimal("150"));
 
     Share share = new Share(testStock, new BigDecimal("10"), new BigDecimal("100"));
     testPlayer.getPortfolio().addShare(share);
@@ -88,14 +100,15 @@ class SaleTest {
     Sale sale = new Sale(share, 1);
     sale.commit(testPlayer);
 
-    assertTrue(testPlayer.getMoney().compareTo(initialMoney) > 0,
+    assertTrue(
+        testPlayer.getMoney().compareTo(initialMoney) > 0,
         "Player money should increase significantly with profit");
     assertTrue(sale.isCommitted(), "Sale with profit should be committed");
   }
 
   @Test
   void commit_sale_with_loss() {
-    testStock.addNewSalesPrice(new BigDecimal("50")); // Price decreased from 100 to 50
+    testStock.addNewSalesPrice(new BigDecimal("50"));
 
     Share share = new Share(testStock, new BigDecimal("10"), new BigDecimal("100"));
     testPlayer.getPortfolio().addShare(share);
@@ -105,14 +118,14 @@ class SaleTest {
     Sale sale = new Sale(share, 1);
     sale.commit(testPlayer);
 
-    assertTrue(testPlayer.getMoney().compareTo(initialMoney) > 0,
+    assertTrue(
+        testPlayer.getMoney().compareTo(initialMoney) > 0,
         "Player should still receive some money even with loss (after commission deduction)");
     assertTrue(sale.isCommitted(), "Sale with loss should still be committed");
   }
 
   @Test
   void commit_sale_with_break_even_price() {
-    // Stock price remains at purchase price
     Share share = new Share(testStock, new BigDecimal("10"), new BigDecimal("100"));
     testPlayer.getPortfolio().addShare(share);
 
@@ -121,7 +134,8 @@ class SaleTest {
     Sale sale = new Sale(share, 1);
     sale.commit(testPlayer);
 
-    assertTrue(testPlayer.getMoney().compareTo(initialMoney) > 0,
+    assertTrue(
+        testPlayer.getMoney().compareTo(initialMoney) > 0,
         "Player should get money back (even if break-even due to commission)");
     assertTrue(sale.isCommitted(), "Break-even sale should be committed");
   }
@@ -135,7 +149,9 @@ class SaleTest {
     sale.commit(testPlayer);
 
     assertTrue(sale.isCommitted(), "Large quantity sale should be committed");
-    assertTrue(testPlayer.getPortfolio().getShares().isEmpty(), "Portfolio should be empty after large sale");
+    assertTrue(
+        testPlayer.getPortfolio().getShares().isEmpty(),
+        "Portfolio should be empty after large sale");
   }
 
   @Test
@@ -147,7 +163,9 @@ class SaleTest {
     sale.commit(testPlayer);
 
     assertTrue(sale.isCommitted(), "Decimal quantity sale should be committed");
-    assertTrue(testPlayer.getPortfolio().getShares().isEmpty(), "Portfolio should be empty after sale");
+    assertTrue(
+        testPlayer.getPortfolio().getShares().isEmpty(),
+        "Portfolio should be empty after sale");
   }
 
   @Test
@@ -174,14 +192,13 @@ class SaleTest {
     assertTrue(sale.isCommitted(), "Large week number sale should be committed");
   }
 
-  // Negative tests - Error cases
   @Test
   void commit_sale_with_null_player_throws_exception() {
     Share share = new Share(testStock, new BigDecimal("10"), new BigDecimal("100"));
-
     Sale sale = new Sale(share, 1);
 
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(
+        IllegalArgumentException.class,
         () -> sale.commit(null),
         "Commit with null player should throw IllegalArgumentException");
   }
@@ -194,7 +211,8 @@ class SaleTest {
     Sale sale = new Sale(share, 1);
     sale.commit(testPlayer);
 
-    assertThrows(IllegalStateException.class,
+    assertThrows(
+        IllegalStateException.class,
         () -> sale.commit(testPlayer),
         "Committing already committed sale should throw IllegalStateException");
   }
@@ -202,10 +220,10 @@ class SaleTest {
   @Test
   void commit_sale_when_player_does_not_own_share_throws_exception() {
     Share share = new Share(testStock, new BigDecimal("10"), new BigDecimal("100"));
-
     Sale sale = new Sale(share, 1);
 
-    assertThrows(IllegalStateException.class,
+    assertThrows(
+        IllegalStateException.class,
         () -> sale.commit(testPlayer),
         "Commit sale without owning share should throw IllegalStateException");
   }
@@ -218,12 +236,45 @@ class SaleTest {
     Share differentShare = new Share(testStock, new BigDecimal("10"), new BigDecimal("100"));
     Sale sale = new Sale(differentShare, 1);
 
-    assertThrows(IllegalStateException.class,
+    assertThrows(
+        IllegalStateException.class,
         () -> sale.commit(testPlayer),
         "Selling different share instance should throw exception");
   }
 
-  // Boundary tests - Edge cases
+  @Test
+  void commit_with_partial_quantity_reduces_owned_bundle() {
+    Share ownedShare = createShare(BigDecimal.valueOf(10), BigDecimal.valueOf(10));
+    Share soldShare = createShare(BigDecimal.valueOf(2), BigDecimal.valueOf(10));
+
+    testPlayer.getPortfolio().addShare(ownedShare);
+    Sale sale = new Sale(soldShare, 1);
+    sale.commit(testPlayer);
+
+    assertTrue(sale.isCommitted());
+    assertEquals(1, testPlayer.getPortfolio().getShares().size());
+    assertEquals(
+        0,
+        testPlayer.getPortfolio().getShares().getFirst().getQuantity()
+            .compareTo(BigDecimal.valueOf(8)));
+  }
+
+  @Test
+  void commit_can_consume_quantity_across_multiple_owned_bundles() {
+    Share firstOwnedShare = createShare(BigDecimal.valueOf(10), BigDecimal.valueOf(8));
+    Share secondOwnedShare = createShare(BigDecimal.valueOf(2), BigDecimal.valueOf(12));
+    Share soldShare = createShare(BigDecimal.valueOf(12), BigDecimal.valueOf(8.666667));
+
+    testPlayer.getPortfolio().addShare(firstOwnedShare);
+    testPlayer.getPortfolio().addShare(secondOwnedShare);
+
+    Sale sale = new Sale(soldShare, 1);
+    sale.commit(testPlayer);
+
+    assertTrue(sale.isCommitted());
+    assertTrue(testPlayer.getPortfolio().getShares().isEmpty());
+  }
+
   @Test
   void commit_sale_with_very_small_quantity() {
     Share share = new Share(testStock, new BigDecimal("0.01"), new BigDecimal("100"));
@@ -257,7 +308,8 @@ class SaleTest {
     sale.commit(testPlayer);
 
     assertTrue(sale.isCommitted(), "Expensive stock sale should be committed");
-    assertTrue(testPlayer.getMoney().compareTo(new BigDecimal("10000")) > 0,
+    assertTrue(
+        testPlayer.getMoney().compareTo(new BigDecimal("10000")) > 0,
         "Player money should increase significantly from expensive stock sale");
   }
 
@@ -276,9 +328,17 @@ class SaleTest {
 
     assertTrue(sale1.isCommitted(), "First sale should be committed");
     assertTrue(sale2.isCommitted(), "Second sale should be committed");
-    assertEquals(2, testPlayer.getTransactionArchive().getSales().size(),
+    assertEquals(
+        2,
+        testPlayer.getTransactionArchive().getSales().size(),
         "Archive should contain both sales");
-    assertTrue(testPlayer.getPortfolio().getShares().isEmpty(),
+    assertTrue(
+        testPlayer.getPortfolio().getShares().isEmpty(),
         "Portfolio should be empty after both sales");
+  }
+
+  private Share createShare(BigDecimal quantity, BigDecimal purchasePrice) {
+    Stock stock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
+    return new Share(stock, quantity, purchasePrice);
   }
 }

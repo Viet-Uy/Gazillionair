@@ -1,7 +1,10 @@
 package edu.ntnu.idi.bidata.group5.ui.view;
 
-import edu.ntnu.idi.bidata.group5.ui.controller.StartController;
 import edu.ntnu.idi.bidata.group5.model.GameSession;
+import edu.ntnu.idi.bidata.group5.ui.controller.StartController;
+import java.io.File;
+import java.math.BigDecimal;
+import java.util.Objects;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -22,9 +25,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import java.io.File;
-import java.math.BigDecimal;
-import java.util.Objects;
 
 /**
  * StartView displays the initial game setup screen for Gazillionair.
@@ -62,10 +62,10 @@ public class StartView {
         MIN_CAPITAL, Integer.MAX_VALUE, DEFAULT_CAPITAL, CAPITAL_STEP);
     this.selectedStockFile = null;
 
-    initializeUI();
+    initializeUi();
   }
 
-  private void initializeUI() {
+  private void initializeUi() {
     StackPane centerPane = createCenterPane();
     root.setCenter(centerPane);
     root.setStyle(
@@ -103,12 +103,12 @@ public class StartView {
             + "-fx-border-radius: 16; "
             + "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0.5, 0, 10);");
 
-    VBox headerSection = createHeaderSection();
-    VBox playerNameSection = createPlayerNameSection();
-    VBox capitalSection = createCapitalSection();
-    VBox fileUploadSection = createFileUploadSection();
-    VBox sampleDataSection = createSampleDataSection();
-    VBox startGameSection = createStartGameSection();
+    final VBox headerSection = createHeaderSection();
+    final VBox playerNameSection = createPlayerNameSection();
+    final VBox capitalSection = createCapitalSection();
+    final VBox fileUploadSection = createFileUploadSection();
+    final VBox sampleDataSection = createSampleDataSection();
+    final VBox startGameSection = createStartGameSection();
 
     card.getChildren().addAll(
         headerSection,
@@ -129,7 +129,7 @@ public class StartView {
    * @return VBox containing header elements
    */
   private VBox createHeaderSection() {
-    VBox section = new VBox(16);
+    final VBox section = new VBox(16);
     section.setAlignment(Pos.CENTER);
 
     Label title = new Label("Gazillionair");
@@ -150,7 +150,7 @@ public class StartView {
    * @return VBox containing label and text input field
    */
   private VBox createPlayerNameSection() {
-    VBox section = new VBox(8);
+    final VBox section = new VBox(8);
     Label label = new Label("Player Name");
     label.setFont(Font.font("System", FontWeight.MEDIUM, 14));
     label.setTextFill(Color.web("#cbd5e1"));
@@ -180,7 +180,7 @@ public class StartView {
    * @return VBox containing label and spinner control
    */
   private VBox createCapitalSection() {
-    VBox section = new VBox(8);
+    final VBox section = new VBox(8);
     Label label = new Label("Starting Capital");
     label.setFont(Font.font("System", FontWeight.MEDIUM, 14));
     label.setTextFill(Color.web("#cbd5e1"));
@@ -206,7 +206,7 @@ public class StartView {
    * @return VBox containing label and upload area
    */
   private VBox createFileUploadSection() {
-    VBox section = new VBox(8);
+    final VBox section = new VBox(8);
     Label label = new Label("Stock Data");
     label.setFont(Font.font("System", FontWeight.MEDIUM, 14));
     label.setTextFill(Color.web("#cbd5e1"));
@@ -239,7 +239,7 @@ public class StartView {
    * @return VBox containing sample data button
    */
   private VBox createSampleDataSection() {
-    VBox section = new VBox();
+    final VBox section = new VBox();
     Button sampleDataBtn = new Button("Use Sample Data (506 stocks)");
     sampleDataBtn.setPrefHeight(32);
     sampleDataBtn.setPrefWidth(Double.MAX_VALUE);
@@ -266,7 +266,7 @@ public class StartView {
    * @return VBox containing start game button with hover effects
    */
   private VBox createStartGameSection() {
-    VBox section = new VBox();
+    final VBox section = new VBox();
     Button startBtn = new Button("Start Game");
     startBtn.setPrefHeight(48);
     startBtn.setPrefWidth(Double.MAX_VALUE);

@@ -1,13 +1,15 @@
 package edu.ntnu.idi.bidata.group5.calculator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import edu.ntnu.idi.bidata.group5.model.Share;
 import edu.ntnu.idi.bidata.group5.model.Stock;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SaleCalculatorTest {
 
@@ -18,14 +20,15 @@ class SaleCalculatorTest {
     testStock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
   }
 
-  // Positive tests - Correct calculations
   @Test
   void calculate_gross_returns_quantity_times_current_sales_price() {
     Share share = new Share(testStock, BigDecimal.valueOf(90), BigDecimal.valueOf(10));
     SaleCalculator calculator = new SaleCalculator(share);
 
-    BigDecimal expectedGross = BigDecimal.valueOf(9000); // 90 * 100 (current sales price)
-    assertEquals(0, expectedGross.compareTo(calculator.calculateGross()),
+    BigDecimal expectedGross = BigDecimal.valueOf(9000);
+    assertEquals(
+        0,
+        expectedGross.compareTo(calculator.calculateGross()),
         "Gross should be quantity times current sales price");
   }
 
@@ -34,8 +37,10 @@ class SaleCalculatorTest {
     Share share = new Share(testStock, BigDecimal.valueOf(90), BigDecimal.valueOf(10));
     SaleCalculator calculator = new SaleCalculator(share);
 
-    BigDecimal expectedCommission = BigDecimal.valueOf(90); // 1% of 9000
-    assertEquals(0, expectedCommission.compareTo(calculator.calculateCommission()),
+    BigDecimal expectedCommission = BigDecimal.valueOf(90);
+    assertEquals(
+        0,
+        expectedCommission.compareTo(calculator.calculateCommission()),
         "Commission should be 1% of gross");
   }
 
@@ -44,11 +49,10 @@ class SaleCalculatorTest {
     Share share = new Share(testStock, BigDecimal.valueOf(90), BigDecimal.valueOf(10));
     SaleCalculator calculator = new SaleCalculator(share);
 
-    // Gross: 9000, Commission: 90, Purchase cost: 900
-    // Profit: 9000 - 90 - 900 = 8010
-    // Tax: 30% of 8010 = 2403
     BigDecimal expectedTax = BigDecimal.valueOf(2403);
-    assertEquals(0, expectedTax.compareTo(calculator.calculateTax()),
+    assertEquals(
+        0,
+        expectedTax.compareTo(calculator.calculateTax()),
         "Tax should be 30% of profit");
   }
 
@@ -57,9 +61,10 @@ class SaleCalculatorTest {
     Share share = new Share(testStock, BigDecimal.valueOf(90), BigDecimal.valueOf(10));
     SaleCalculator calculator = new SaleCalculator(share);
 
-    // Total: 9000 - 90 - 2403 = 6507
     BigDecimal expectedTotal = BigDecimal.valueOf(6507);
-    assertEquals(0, expectedTotal.compareTo(calculator.calculateTotal()),
+    assertEquals(
+        0,
+        expectedTotal.compareTo(calculator.calculateTotal()),
         "Total should be gross minus commission minus tax");
   }
 
@@ -69,10 +74,9 @@ class SaleCalculatorTest {
     Share share = new Share(lossStock, BigDecimal.valueOf(10), BigDecimal.valueOf(100));
     SaleCalculator calculator = new SaleCalculator(share);
 
-    // Gross: 500, Commission: 5, Purchase cost: 1000
-    // Profit: 500 - 5 - 1000 = -505 (loss)
-    // Tax: 0 (no tax on loss)
-    assertEquals(0, BigDecimal.ZERO.compareTo(calculator.calculateTax()),
+    assertEquals(
+        0,
+        BigDecimal.ZERO.compareTo(calculator.calculateTax()),
         "Tax should be zero when selling at a loss");
   }
 
@@ -81,10 +85,9 @@ class SaleCalculatorTest {
     Share share = new Share(testStock, BigDecimal.valueOf(10), BigDecimal.valueOf(100));
     SaleCalculator calculator = new SaleCalculator(share);
 
-    // Gross: 1000, Commission: 10, Purchase cost: 1000
-    // Profit: 1000 - 10 - 1000 = -10 (loss due to commission)
-    // Tax: 0 (no tax on loss)
-    assertEquals(0, BigDecimal.ZERO.compareTo(calculator.calculateTax()),
+    assertEquals(
+        0,
+        BigDecimal.ZERO.compareTo(calculator.calculateTax()),
         "Tax should be zero on break-even or loss");
   }
 
@@ -94,10 +97,10 @@ class SaleCalculatorTest {
     Share share = new Share(lossStock, BigDecimal.valueOf(10), BigDecimal.valueOf(100));
     SaleCalculator calculator = new SaleCalculator(share);
 
-    // Gross: 500, Commission: 5, Tax: 0
-    // Total: 500 - 5 - 0 = 495
     BigDecimal expectedTotal = BigDecimal.valueOf(495);
-    assertEquals(0, expectedTotal.compareTo(calculator.calculateTotal()),
+    assertEquals(
+        0,
+        expectedTotal.compareTo(calculator.calculateTotal()),
         "Total should deduct commission even on loss");
   }
 
@@ -106,7 +109,7 @@ class SaleCalculatorTest {
     Share share = new Share(testStock, BigDecimal.valueOf(1000), BigDecimal.valueOf(10));
     SaleCalculator calculator = new SaleCalculator(share);
 
-    BigDecimal expectedGross = BigDecimal.valueOf(100000); // 1000 * 100
+    BigDecimal expectedGross = BigDecimal.valueOf(100000);
     assertEquals(0, expectedGross.compareTo(calculator.calculateGross()));
   }
 
@@ -115,8 +118,10 @@ class SaleCalculatorTest {
     Share share = new Share(testStock, new BigDecimal("10.50"), new BigDecimal("50.25"));
     SaleCalculator calculator = new SaleCalculator(share);
 
-    BigDecimal expectedGross = new BigDecimal("1050"); // 10.50 * 100
-    assertEquals(0, expectedGross.compareTo(calculator.calculateGross()),
+    BigDecimal expectedGross = new BigDecimal("1050");
+    assertEquals(
+        0,
+        expectedGross.compareTo(calculator.calculateGross()),
         "Should handle decimal values correctly");
   }
 
@@ -175,8 +180,7 @@ class SaleCalculatorTest {
     SaleCalculator calculator = new SaleCalculator(share);
 
     BigDecimal tax = calculator.calculateTax();
-    assertTrue(tax.compareTo(BigDecimal.ZERO) >= 0,
-        "Tax should never be negative");
+    assertTrue(tax.compareTo(BigDecimal.ZERO) >= 0, "Tax should never be negative");
   }
 
   @Test
@@ -185,24 +189,20 @@ class SaleCalculatorTest {
     Share share = new Share(gainStock, BigDecimal.valueOf(10), BigDecimal.valueOf(100));
     SaleCalculator calculator = new SaleCalculator(share);
 
-    // Gross: 5000, Commission: 50, Purchase cost: 1000
-    // Profit: 5000 - 50 - 1000 = 3950
-    // Tax: 30% of 3950 = 1185
-    // Total: 5000 - 50 - 1185 = 3765
     BigDecimal total = calculator.calculateTotal();
-    assertTrue(total.compareTo(BigDecimal.ZERO) > 0,
+    assertTrue(
+        total.compareTo(BigDecimal.ZERO) > 0,
         "Total should be positive even after high tax on high profit");
   }
 
-  // Negative tests - Error cases
   @Test
   void constructor_with_null_share_throws_exception() {
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(
+        IllegalArgumentException.class,
         () -> new SaleCalculator(null),
         "Constructor should reject null share");
   }
 
-  // Boundary tests - Edge cases
   @Test
   void calculate_with_minimum_valid_quantity() {
     Share share = new Share(testStock, new BigDecimal("0.0001"), BigDecimal.valueOf(100));
