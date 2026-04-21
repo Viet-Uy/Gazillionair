@@ -1,13 +1,14 @@
 package edu.ntnu.idi.bidata.group5.calculator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import edu.ntnu.idi.bidata.group5.model.Share;
 import edu.ntnu.idi.bidata.group5.model.Stock;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class PurchaseCalculatorTest {
 
@@ -18,14 +19,15 @@ class PurchaseCalculatorTest {
     testStock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
   }
 
-  // Positive tests - Correct calculations
   @Test
   void calculate_gross_returns_quantity_times_price() {
     Share share = new Share(testStock, BigDecimal.valueOf(10), BigDecimal.valueOf(50));
     PurchaseCalculator calculator = new PurchaseCalculator(share);
 
-    BigDecimal expectedGross = BigDecimal.valueOf(500); // 10 * 50
-    assertEquals(0, expectedGross.compareTo(calculator.calculateGross()),
+    BigDecimal expectedGross = BigDecimal.valueOf(500);
+    assertEquals(
+        0,
+        expectedGross.compareTo(calculator.calculateGross()),
         "Gross should be quantity times purchase price");
   }
 
@@ -34,8 +36,10 @@ class PurchaseCalculatorTest {
     Share share = new Share(testStock, BigDecimal.valueOf(10), BigDecimal.valueOf(50));
     PurchaseCalculator calculator = new PurchaseCalculator(share);
 
-    BigDecimal expectedCommission = BigDecimal.valueOf(2.5); // 0.5% of 500
-    assertEquals(0, expectedCommission.compareTo(calculator.calculateCommission()),
+    BigDecimal expectedCommission = BigDecimal.valueOf(2.5);
+    assertEquals(
+        0,
+        expectedCommission.compareTo(calculator.calculateCommission()),
         "Commission should be 0.5% of gross");
   }
 
@@ -44,7 +48,9 @@ class PurchaseCalculatorTest {
     Share share = new Share(testStock, BigDecimal.valueOf(10), BigDecimal.valueOf(50));
     PurchaseCalculator calculator = new PurchaseCalculator(share);
 
-    assertEquals(0, BigDecimal.ZERO.compareTo(calculator.calculateTax()),
+    assertEquals(
+        0,
+        BigDecimal.ZERO.compareTo(calculator.calculateTax()),
         "Tax should be zero for purchases");
   }
 
@@ -53,8 +59,10 @@ class PurchaseCalculatorTest {
     Share share = new Share(testStock, BigDecimal.valueOf(10), BigDecimal.valueOf(50));
     PurchaseCalculator calculator = new PurchaseCalculator(share);
 
-    BigDecimal expectedTotal = BigDecimal.valueOf(502.5); // 500 + 2.5 + 0
-    assertEquals(0, expectedTotal.compareTo(calculator.calculateTotal()),
+    BigDecimal expectedTotal = BigDecimal.valueOf(502.5);
+    assertEquals(
+        0,
+        expectedTotal.compareTo(calculator.calculateTotal()),
         "Total should be gross plus commission plus tax");
   }
 
@@ -63,8 +71,8 @@ class PurchaseCalculatorTest {
     Share share = new Share(testStock, BigDecimal.valueOf(1000), BigDecimal.valueOf(100));
     PurchaseCalculator calculator = new PurchaseCalculator(share);
 
-    BigDecimal expectedGross = BigDecimal.valueOf(100000); // 1000 * 100
-    BigDecimal expectedCommission = BigDecimal.valueOf(500); // 0.5% of 100000
+    BigDecimal expectedGross = BigDecimal.valueOf(100000);
+    BigDecimal expectedCommission = BigDecimal.valueOf(500);
     BigDecimal expectedTotal = BigDecimal.valueOf(100500);
 
     assertEquals(0, expectedGross.compareTo(calculator.calculateGross()));
@@ -77,8 +85,10 @@ class PurchaseCalculatorTest {
     Share share = new Share(testStock, new BigDecimal("10.50"), new BigDecimal("50.25"));
     PurchaseCalculator calculator = new PurchaseCalculator(share);
 
-    BigDecimal expectedGross = new BigDecimal("527.625"); // 10.50 * 50.25
-    assertEquals(0, expectedGross.compareTo(calculator.calculateGross()),
+    BigDecimal expectedGross = new BigDecimal("527.625");
+    assertEquals(
+        0,
+        expectedGross.compareTo(calculator.calculateGross()),
         "Should handle decimal values correctly");
   }
 
@@ -106,7 +116,7 @@ class PurchaseCalculatorTest {
     PurchaseCalculator calculator = new PurchaseCalculator(share);
 
     BigDecimal expectedGross = BigDecimal.valueOf(100000);
-    BigDecimal expectedCommission = BigDecimal.valueOf(500); // 0.5%
+    BigDecimal expectedCommission = BigDecimal.valueOf(500);
     BigDecimal expectedTotal = BigDecimal.valueOf(100500);
 
     assertEquals(0, expectedGross.compareTo(calculator.calculateGross()));
@@ -125,25 +135,24 @@ class PurchaseCalculatorTest {
 
   @Test
   void commission_calculation_precision() {
-    // Test that commission calculation is accurate with different values
     Share share1 = new Share(testStock, BigDecimal.valueOf(3), BigDecimal.valueOf(100));
     PurchaseCalculator calc1 = new PurchaseCalculator(share1);
 
     BigDecimal gross1 = BigDecimal.valueOf(300);
-    BigDecimal commission1 = BigDecimal.valueOf(1.5); // 0.5% of 300
+    BigDecimal commission1 = BigDecimal.valueOf(1.5);
+
     assertEquals(0, gross1.compareTo(calc1.calculateGross()));
     assertEquals(0, commission1.compareTo(calc1.calculateCommission()));
   }
 
-  // Negative tests - Error cases
   @Test
   void constructor_with_null_share_throws_exception() {
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(
+        IllegalArgumentException.class,
         () -> new PurchaseCalculator(null),
         "Constructor should reject null share");
   }
 
-  // Boundary tests - Edge cases
   @Test
   void calculate_with_minimum_valid_quantity() {
     Share share = new Share(testStock, new BigDecimal("0.0001"), BigDecimal.valueOf(100));
@@ -163,7 +172,6 @@ class PurchaseCalculatorTest {
 
   @Test
   void commission_rounding_consistency() {
-    // Test multiple shares to ensure rounding is consistent
     Share share1 = new Share(testStock, BigDecimal.valueOf(1), BigDecimal.valueOf(33));
     Share share2 = new Share(testStock, BigDecimal.valueOf(1), BigDecimal.valueOf(67));
 

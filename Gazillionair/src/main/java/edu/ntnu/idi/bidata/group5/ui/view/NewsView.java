@@ -1,6 +1,7 @@
 package edu.ntnu.idi.bidata.group5.ui.view;
 
 import edu.ntnu.idi.bidata.group5.ui.view.components.NewsCard;
+import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -12,7 +13,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import java.util.List;
 
 /**
  * NewsView displays a chronological feed of news articles.
@@ -37,13 +37,13 @@ public class NewsView {
     this.sentimentFilter = new ComboBox<>();
     this.noNewsLabel = new Label("No news available.");
 
-    initializeUI();
+    initializeUi();
   }
 
   /**
    * Initializes the UI with filter controls and news feed layout.
    */
-  private void initializeUI() {
+  private void initializeUi() {
     root.setPadding(new Insets(16));
     root.setStyle("-fx-background-color: transparent;");
 

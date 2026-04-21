@@ -74,7 +74,7 @@ class GameEngineTest {
 
   @Test
   void next_week_multiple_times() {
-    int initialWeek = session.getCurrentWeek();
+    final int initialWeek = session.getCurrentWeek();
 
     gameEngine.nextWeek(session);
     gameEngine.nextWeek(session);

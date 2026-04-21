@@ -1,19 +1,21 @@
 package edu.ntnu.idi.bidata.group5.service;
 
-import edu.ntnu.idi.bidata.group5.model.Purchase;
-import edu.ntnu.idi.bidata.group5.model.Sale;
-import java.util.Arrays;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.ntnu.idi.bidata.group5.model.Player;
+import edu.ntnu.idi.bidata.group5.model.Purchase;
+import edu.ntnu.idi.bidata.group5.model.Sale;
 import edu.ntnu.idi.bidata.group5.model.Share;
 import edu.ntnu.idi.bidata.group5.model.Stock;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class ExchangeTest {
 
@@ -62,7 +64,8 @@ class ExchangeTest {
 
   @Test
   void constructorThrowsOnNullStockInList() {
-    assertThrows(IllegalArgumentException.class, () -> new Exchange("BadExchange", Arrays.asList(apple, null)));
+    assertThrows(IllegalArgumentException.class,
+        () -> new Exchange("BadExchange", Arrays.asList(apple, null)));
   }
 
   //tests for getStock
@@ -147,7 +150,7 @@ class ExchangeTest {
   void buyShouldReduceMoneyAddShareAndArchiveTransaction() {
     Player player = new Player("Player1", new BigDecimal("1000"));
 
-    Purchase purchase = exchange.buy(player, "AAPL", new BigDecimal("2")); // 2 * 100 = 200
+    final Purchase purchase = exchange.buy(player, "AAPL", new BigDecimal("2")); // 2 * 100 = 200
 
     // Existing Assertions
     assertEquals(0, player.getMoney().compareTo(new BigDecimal("799")));
@@ -159,7 +162,7 @@ class ExchangeTest {
     assertNotNull(purchase);
     assertTrue(purchase.isCommitted());
     assertEquals("AAPL", purchase.getShare().getStock().getSymbol());
-    assertEquals(0, new BigDecimal ("2").compareTo(purchase.getShare().getQuantity()));
+    assertEquals(0, new BigDecimal("2").compareTo(purchase.getShare().getQuantity()));
     assertEquals(1, purchase.getWeek());
   }
 
@@ -217,7 +220,7 @@ class ExchangeTest {
     exchange.buy(player, "AAPL", new BigDecimal("1"));
     Share ownedShare = player.getPortfolio().getShares().getFirst();
 
-    Sale sale = exchange.sell(player, ownedShare);
+    final Sale sale = exchange.sell(player, ownedShare);
 
     // Existing assertions
     assertEquals(0, player.getMoney().compareTo(new BigDecimal("998.50")));
@@ -258,7 +261,7 @@ class ExchangeTest {
     Stock stock1 = new Stock("STOCK1", "Company1", new BigDecimal("100"));
     Stock stock2 = new Stock("STOCK2", "Company2", new BigDecimal("100"));
     Stock stock3 = new Stock("STOCK3", "Company3", new BigDecimal("100"));
-    Exchange ex = new Exchange("TestExchange", List.of(stock1, stock2, stock3));
+    final Exchange ex = new Exchange("TestExchange", List.of(stock1, stock2, stock3));
 
     stock1.addNewSalesPrice(new BigDecimal("110")); // +10
     stock2.addNewSalesPrice(new BigDecimal("120")); // +20
@@ -276,7 +279,7 @@ class ExchangeTest {
     Stock stock1 = new Stock("STOCK1", "Company1", new BigDecimal("100"));
     Stock stock2 = new Stock("STOCK2", "Company2", new BigDecimal("100"));
     Stock stock3 = new Stock("STOCK3", "Company3", new BigDecimal("100"));
-    Exchange ex = new Exchange("TestExchange", List.of(stock1, stock2, stock3));
+    final Exchange ex = new Exchange("TestExchange", List.of(stock1, stock2, stock3));
 
     stock1.addNewSalesPrice(new BigDecimal("110"));
     stock2.addNewSalesPrice(new BigDecimal("120"));
@@ -308,7 +311,7 @@ class ExchangeTest {
   void getGainersIncludesZeroAndNegativeChanges() {
     Stock stock1 = new Stock("STOCK1", "Company1", new BigDecimal("100"));
     Stock stock2 = new Stock("STOCK2", "Company2", new BigDecimal("100"));
-    Exchange ex = new Exchange("TestExchange", List.of(stock1, stock2));
+    final Exchange ex = new Exchange("TestExchange", List.of(stock1, stock2));
 
     stock1.addNewSalesPrice(new BigDecimal("100")); // 0 change
     stock2.addNewSalesPrice(new BigDecimal("90"));  // -10 change
@@ -326,7 +329,7 @@ class ExchangeTest {
     Stock stock1 = new Stock("STOCK1", "Company1", new BigDecimal("100"));
     Stock stock2 = new Stock("STOCK2", "Company2", new BigDecimal("100"));
     Stock stock3 = new Stock("STOCK3", "Company3", new BigDecimal("100"));
-    Exchange ex = new Exchange("TestExchange", List.of(stock1, stock2, stock3));
+    final Exchange ex = new Exchange("TestExchange", List.of(stock1, stock2, stock3));
 
     stock1.addNewSalesPrice(new BigDecimal("90")); // -10
     stock2.addNewSalesPrice(new BigDecimal("80")); // -20
@@ -344,7 +347,7 @@ class ExchangeTest {
     Stock stock1 = new Stock("STOCK1", "Company1", new BigDecimal("100"));
     Stock stock2 = new Stock("STOCK2", "Company2", new BigDecimal("100"));
     Stock stock3 = new Stock("STOCK3", "Company3", new BigDecimal("100"));
-    Exchange ex = new Exchange("TestExchange", List.of(stock1, stock2, stock3));
+    final Exchange ex = new Exchange("TestExchange", List.of(stock1, stock2, stock3));
 
     stock1.addNewSalesPrice(new BigDecimal("90"));
     stock2.addNewSalesPrice(new BigDecimal("80"));
@@ -370,7 +373,7 @@ class ExchangeTest {
   void getLosersIncludesZeroAndPositiveChanges() {
     Stock stock1 = new Stock("STOCK1", "Company1", new BigDecimal("100"));
     Stock stock2 = new Stock("STOCK2", "Company2", new BigDecimal("100"));
-    Exchange ex = new Exchange("TestExchange", List.of(stock1, stock2));
+    final Exchange ex = new Exchange("TestExchange", List.of(stock1, stock2));
 
     stock1.addNewSalesPrice(new BigDecimal("100")); // 0 change
     stock2.addNewSalesPrice(new BigDecimal("110")); // +10 change

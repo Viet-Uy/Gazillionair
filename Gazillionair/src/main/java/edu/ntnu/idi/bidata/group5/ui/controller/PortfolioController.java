@@ -77,6 +77,47 @@ public class PortfolioController {
   }
 
   /**
+   * Sells a specific holding quantity by symbol.
+   *
+   * @param symbol stock symbol
+   * @param quantity quantity to sell
+   * @return committed sale
+   */
+  public Sale sell(String symbol, BigDecimal quantity) {
+    return session.sell(symbol, quantity);
+  }
+
+  /**
+   * Returns total owned quantity for a stock symbol.
+   *
+   * @param symbol stock symbol
+   * @return total quantity owned
+   */
+  public BigDecimal getOwnedQuantity(String symbol) {
+    if (symbol == null || symbol.isBlank()) {
+      throw new IllegalArgumentException("Symbol cannot be null or blank");
+    }
+    return session.getHoldings().stream()
+        .filter(share -> share.getStock().getSymbol().equalsIgnoreCase(symbol))
+        .map(Share::getQuantity)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+  }
+
+  /**
+   * Sells all shares for a single stock symbol.
+   *
+   * @param symbol stock symbol
+   * @return committed sale
+   */
+  public Sale sellAllForSymbol(String symbol) {
+    BigDecimal ownedQuantity = getOwnedQuantity(symbol);
+    if (ownedQuantity.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalStateException("No holdings for selected stock");
+    }
+    return session.sell(symbol, ownedQuantity);
+  }
+
+  /**
    * Sells all holdings in one operation.
    *
    * @return committed sale list
