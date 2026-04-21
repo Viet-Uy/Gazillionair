@@ -1,11 +1,11 @@
 package edu.ntnu.idi.bidata.group5.model;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.math.BigDecimal;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class ShareTest {
 
@@ -16,13 +16,19 @@ class ShareTest {
     testStock = new Stock("AAPL", "Apple", BigDecimal.valueOf(100));
   }
 
-  // Positive tests - Constructor and Getters
   @Test
   void constructor_with_valid_data_stores_fields_correctly() {
     Share share = new Share(testStock, BigDecimal.valueOf(10), BigDecimal.valueOf(150));
+
     assertEquals(testStock, share.getStock(), "Stock should be stored correctly");
-    assertEquals(0, BigDecimal.valueOf(10).compareTo(share.getQuantity()), "Quantity should be stored correctly");
-    assertEquals(0, BigDecimal.valueOf(150).compareTo(share.getPurchasePrice()), "Purchase price should be stored correctly");
+    assertEquals(
+        0,
+        BigDecimal.valueOf(10).compareTo(share.getQuantity()),
+        "Quantity should be stored correctly");
+    assertEquals(
+        0,
+        BigDecimal.valueOf(150).compareTo(share.getPurchasePrice()),
+        "Purchase price should be stored correctly");
   }
 
   @Test
@@ -64,57 +70,62 @@ class ShareTest {
     assertEquals(0, new BigDecimal("0.01").compareTo(share.getPurchasePrice()));
   }
 
-  // Negative tests - Constructor validation
   @Test
   void constructor_rejects_null_stock() {
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(
+        IllegalArgumentException.class,
         () -> new Share(null, BigDecimal.valueOf(10), BigDecimal.valueOf(150)),
         "Constructor should reject null stock");
   }
 
   @Test
   void constructor_rejects_null_quantity() {
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(
+        IllegalArgumentException.class,
         () -> new Share(testStock, null, BigDecimal.valueOf(150)),
         "Constructor should reject null quantity");
   }
 
   @Test
   void constructor_rejects_zero_quantity() {
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(
+        IllegalArgumentException.class,
         () -> new Share(testStock, BigDecimal.ZERO, BigDecimal.valueOf(150)),
         "Constructor should reject zero quantity");
   }
 
   @Test
   void constructor_rejects_negative_quantity() {
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(
+        IllegalArgumentException.class,
         () -> new Share(testStock, BigDecimal.valueOf(-10), BigDecimal.valueOf(150)),
         "Constructor should reject negative quantity");
   }
 
   @Test
   void constructor_rejects_null_purchase_price() {
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(
+        IllegalArgumentException.class,
         () -> new Share(testStock, BigDecimal.valueOf(10), null),
         "Constructor should reject null purchase price");
   }
 
   @Test
   void constructor_rejects_zero_purchase_price() {
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(
+        IllegalArgumentException.class,
         () -> new Share(testStock, BigDecimal.valueOf(10), BigDecimal.ZERO),
         "Constructor should reject zero purchase price");
   }
 
   @Test
   void constructor_rejects_negative_purchase_price() {
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(
+        IllegalArgumentException.class,
         () -> new Share(testStock, BigDecimal.valueOf(10), BigDecimal.valueOf(-150)),
         "Constructor should reject negative purchase price");
   }
 
-  // Boundary tests - Edge cases
   @Test
   void constructor_with_very_large_quantity() {
     BigDecimal largeQuantity = new BigDecimal("999999999999.99");
@@ -143,4 +154,3 @@ class ShareTest {
     assertEquals(0, tinyPrice.compareTo(share.getPurchasePrice()));
   }
 }
-

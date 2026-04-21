@@ -16,12 +16,13 @@ import org.junit.jupiter.api.Test;
 class PortfolioControllerTest {
 
   private PortfolioController controller;
+  private GameSession session;
 
   @BeforeEach
   void setUp() {
     Stock apple = new Stock("AAPL", "Apple", new BigDecimal("100"));
     Stock tesla = new Stock("TSLA", "Tesla", new BigDecimal("200"));
-    GameSession session = new GameSession("Uy", new BigDecimal("2000"), List.of(apple, tesla));
+    session = new GameSession("Uy", new BigDecimal("2000"), List.of(apple, tesla));
     session.buy("AAPL", 1);
     session.buy("TSLA", 1);
     controller = new PortfolioController(session);
@@ -59,6 +60,17 @@ class PortfolioControllerTest {
     List<Sale> sales = controller.sellAll();
     assertEquals(2, sales.size());
     assertFalse(controller.hasHoldings());
+  }
+
+  @Test
+  void sellAllForSymbolSellsOnlyChosenStock() {
+    session.buy("AAPL", 2);
+
+    Sale sale = controller.sellAllForSymbol("AAPL");
+
+    assertTrue(sale.isCommitted());
+    assertEquals(0, controller.getOwnedQuantity("AAPL").compareTo(BigDecimal.ZERO));
+    assertTrue(controller.getOwnedQuantity("TSLA").compareTo(BigDecimal.ZERO) > 0);
   }
 }
 

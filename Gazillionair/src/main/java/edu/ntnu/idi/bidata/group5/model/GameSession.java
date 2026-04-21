@@ -167,7 +167,16 @@ public class GameSession implements ObservableModel {
    * @return player status
    */
   public PlayerStatus getPlayerStatus() {
-    return player.getStatus();
+    BigDecimal growth =
+        getNetWorth().divide(player.getStartingMoney(), 2, java.math.RoundingMode.HALF_UP);
+    int weeks = getCurrentWeek();
+    if (weeks >= 20 && growth.compareTo(BigDecimal.valueOf(2.0)) >= 0) {
+      return PlayerStatus.SPECULATOR;
+    } else if (weeks >= 10 && growth.compareTo(BigDecimal.valueOf(1.2)) >= 0) {
+      return PlayerStatus.INVESTOR;
+    } else {
+      return PlayerStatus.NOVICE;
+    }
   }
 
   /**
@@ -231,15 +240,26 @@ public class GameSession implements ObservableModel {
    * @return committed purchase
    */
   public Purchase buy(String symbol, int quantity) {
+    return buy(symbol, BigDecimal.valueOf(quantity));
+  }
+
+  /**
+   * Creates and commits a buy transaction.
+   *
+   * @param symbol stock symbol
+   * @param quantity share quantity
+   * @return committed purchase
+   */
+  public Purchase buy(String symbol, BigDecimal quantity) {
     if (symbol == null || symbol.isBlank()) {
       throw new IllegalArgumentException("Symbol cannot be null or blank");
     }
-    if (quantity <= 0) {
+    if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
       throw new IllegalArgumentException("Quantity must be greater than zero");
     }
 
     Stock stock = exchange.getStock(symbol);
-    Share share = new Share(stock, BigDecimal.valueOf(quantity), stock.getSalesPrice());
+    Share share = new Share(stock, quantity, stock.getSalesPrice());
     Purchase purchase = transactionFactory.createPurchase(share, getCurrentWeek());
     purchase.commit(player);
     publishModelChanged();
@@ -254,15 +274,39 @@ public class GameSession implements ObservableModel {
    * @return committed sale
    */
   public Sale sell(String symbol, int quantity) {
+    return sell(symbol, BigDecimal.valueOf(quantity));
+  }
+
+  /**
+   * Creates and commits a sell transaction.
+   *
+   * @param symbol stock symbol
+   * @param quantity share quantity
+   * @return committed sale
+   */
+  public Sale sell(String symbol, BigDecimal quantity) {
     if (symbol == null || symbol.isBlank()) {
       throw new IllegalArgumentException("Symbol cannot be null or blank");
     }
-    if (quantity <= 0) {
+    if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
       throw new IllegalArgumentException("Quantity must be greater than zero");
     }
 
-    BigDecimal targetQuantity = BigDecimal.valueOf(quantity);
-    Share shareToSell = getMatchingOwnedShare(symbol, targetQuantity);
+    Stock stock = exchange.getStock(symbol);
+    BigDecimal targetQuantity = quantity;
+    List<Share> ownedShares = player.getPortfolio().getShares(symbol.toUpperCase());
+    if (ownedShares.isEmpty()) {
+      throw new IllegalStateException("No owned share has enough quantity to sell");
+    }
+    BigDecimal totalOwnedQuantity = ownedShares.stream()
+        .map(Share::getQuantity)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+    if (totalOwnedQuantity.compareTo(targetQuantity) < 0) {
+      throw new IllegalStateException("No owned share has enough quantity to sell");
+    }
+
+    BigDecimal weightedPurchasePrice = calculateWeightedPurchasePrice(ownedShares, targetQuantity);
+    Share shareToSell = new Share(stock, targetQuantity, weightedPurchasePrice);
     Sale sale = transactionFactory.createSale(shareToSell, getCurrentWeek());
     sale.commit(player);
     publishModelChanged();
@@ -305,7 +349,20 @@ public class GameSession implements ObservableModel {
    * @return true if buy is valid
    */
   public boolean canBuy(String symbol, int quantity) {
-    if (symbol == null || symbol.isBlank() || quantity <= 0) {
+    return canBuy(symbol, BigDecimal.valueOf(quantity));
+  }
+
+  /**
+   * Returns whether a buy is currently valid.
+   *
+   * @param symbol stock symbol
+   * @param quantity share quantity
+   * @return true if buy is valid
+   */
+  public boolean canBuy(String symbol, BigDecimal quantity) {
+    if (symbol == null || symbol.isBlank()
+        || quantity == null
+        || quantity.compareTo(BigDecimal.ZERO) <= 0) {
       return false;
     }
 
@@ -316,7 +373,7 @@ public class GameSession implements ObservableModel {
       return false;
     }
 
-    Share share = new Share(stock, BigDecimal.valueOf(quantity), stock.getSalesPrice());
+    Share share = new Share(stock, quantity, stock.getSalesPrice());
     Purchase purchase = transactionFactory.createPurchase(share, getCurrentWeek());
     return player.getMoney().compareTo(purchase.getCalculator().calculateTotal()) >= 0;
   }
@@ -329,16 +386,26 @@ public class GameSession implements ObservableModel {
    * @return true if sell is valid
    */
   public boolean canSell(String symbol, int quantity) {
-    if (symbol == null || symbol.isBlank() || quantity <= 0) {
+    return canSell(symbol, BigDecimal.valueOf(quantity));
+  }
+
+  /**
+   * Returns whether a sell is currently valid.
+   *
+   * @param symbol stock symbol
+   * @param quantity share quantity
+   * @return true if sell is valid
+   */
+  public boolean canSell(String symbol, BigDecimal quantity) {
+    if (symbol == null || symbol.isBlank()
+        || quantity == null
+        || quantity.compareTo(BigDecimal.ZERO) <= 0) {
       return false;
     }
-    BigDecimal targetQuantity = BigDecimal.valueOf(quantity);
-    try {
-      getMatchingOwnedShare(symbol, targetQuantity);
-      return true;
-    } catch (IllegalStateException e) {
-      return false;
-    }
+    BigDecimal totalOwnedQuantity = player.getPortfolio().getShares(symbol.toUpperCase()).stream()
+        .map(Share::getQuantity)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+    return totalOwnedQuantity.compareTo(quantity) >= 0;
   }
 
   /**
@@ -386,10 +453,18 @@ public class GameSession implements ObservableModel {
     }
   }
 
-  private Share getMatchingOwnedShare(String symbol, BigDecimal quantity) {
-    return player.getPortfolio().getShares(symbol).stream()
-        .filter(share -> share.getQuantity().compareTo(quantity) == 0)
-        .findFirst()
-        .orElseThrow(() -> new IllegalStateException("No matching owned share found to sell"));
+  private BigDecimal calculateWeightedPurchasePrice(List<Share> ownedShares,
+                                                    BigDecimal targetQuantity) {
+    BigDecimal remaining = targetQuantity;
+    BigDecimal totalCost = BigDecimal.ZERO;
+    for (Share share : ownedShares) {
+      if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+        break;
+      }
+      BigDecimal consumedQuantity = share.getQuantity().min(remaining);
+      totalCost = totalCost.add(consumedQuantity.multiply(share.getPurchasePrice()));
+      remaining = remaining.subtract(consumedQuantity);
+    }
+    return totalCost.divide(targetQuantity, 6, java.math.RoundingMode.HALF_UP);
   }
 }
