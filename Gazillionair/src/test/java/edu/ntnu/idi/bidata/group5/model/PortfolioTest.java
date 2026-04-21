@@ -1,13 +1,15 @@
 package edu.ntnu.idi.bidata.group5.model;
 
-import edu.ntnu.idi.bidata.group5.calculator.SaleCalculator;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.ntnu.idi.bidata.group5.calculator.SaleCalculator;
 import java.math.BigDecimal;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class PortfolioTest {
 
@@ -22,7 +24,6 @@ class PortfolioTest {
     tesla = new Stock("TSLA", "Tesla", new BigDecimal("200"));
   }
 
-  // Positive tests - Happy path
   @Test
   void add_share_successfully() {
     Share share = new Share(apple, new BigDecimal("10"), new BigDecimal("100"));
@@ -62,6 +63,7 @@ class PortfolioTest {
     Share share = new Share(apple, new BigDecimal("10"), new BigDecimal("100"));
     portfolio.addShare(share);
 
+    assertTrue(portfolio.getShares().contains(share));
     assertTrue(portfolio.removeShare(share), "removeShare should return true");
     assertEquals(0, portfolio.getShares().size(), "Portfolio should be empty");
     assertFalse(portfolio.contains(share), "Portfolio should not contain removed share");
@@ -89,7 +91,8 @@ class PortfolioTest {
     List<Share> shares = portfolio.getShares();
     shares.add(new Share(tesla, new BigDecimal("5"), new BigDecimal("200")));
 
-    assertEquals(1, portfolio.getShares().size(), "Adding to returned list should not modify portfolio");
+    assertEquals(
+        1, portfolio.getShares().size(), "Adding to returned list should not modify portfolio");
   }
 
   @Test
@@ -184,7 +187,6 @@ class PortfolioTest {
     portfolio.addShare(share);
 
     BigDecimal initialNetWorth = portfolio.getNetWorth();
-
     apple.addNewSalesPrice(new BigDecimal("150"));
 
     BigDecimal updatedNetWorth = portfolio.getNetWorth();
@@ -192,7 +194,6 @@ class PortfolioTest {
         "Net worth should increase when stock price increases");
   }
 
-  // Negative tests - Error cases
   @Test
   void add_null_share_throws_exception() {
     assertThrows(IllegalArgumentException.class,
@@ -238,7 +239,6 @@ class PortfolioTest {
         "Checking contains with null share should throw exception");
   }
 
-  // Boundary tests - Edge cases
   @Test
   void empty_portfolio_operations() {
     assertTrue(portfolio.getShares().isEmpty(), "Empty portfolio should have empty shares list");

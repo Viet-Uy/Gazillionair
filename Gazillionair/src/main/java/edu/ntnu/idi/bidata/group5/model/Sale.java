@@ -32,14 +32,35 @@ public class Sale extends Transaction {
       throw new IllegalStateException("Transaction already committed.");
     }
 
-    if (!player.getPortfolio().contains(getShare())) {
+    BigDecimal remainingToSell = getShare().getQuantity();
+    java.util.List<Share> matchingShares =
+        player.getPortfolio().getShares(getShare().getStock().getSymbol());
+    BigDecimal availableQuantity = matchingShares.stream()
+        .map(Share::getQuantity)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+    if (availableQuantity.compareTo(remainingToSell) < 0) {
       throw new IllegalStateException("Player does not own the share.");
+    }
+
+    for (Share ownedShare : matchingShares) {
+      if (remainingToSell.compareTo(BigDecimal.ZERO) <= 0) {
+        break;
+      }
+      player.getPortfolio().removeShare(ownedShare);
+      if (ownedShare.getQuantity().compareTo(remainingToSell) > 0) {
+        BigDecimal newQuantity = ownedShare.getQuantity().subtract(remainingToSell);
+        Share remainderShare = new Share(
+            ownedShare.getStock(), newQuantity, ownedShare.getPurchasePrice());
+        player.getPortfolio().addShare(remainderShare);
+        remainingToSell = BigDecimal.ZERO;
+      } else {
+        remainingToSell = remainingToSell.subtract(ownedShare.getQuantity());
+      }
     }
 
     BigDecimal totalValue = getCalculator().calculateTotal();
 
     player.addMoney(totalValue);
-    player.getPortfolio().removeShare(getShare());
     player.getTransactionArchive().add(this);
 
     committed = true;

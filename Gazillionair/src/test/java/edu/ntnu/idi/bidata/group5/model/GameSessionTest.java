@@ -25,8 +25,10 @@ class GameSessionTest {
 
   @Test
   void constructorRejectsInvalidInput() {
-    assertThrows(IllegalArgumentException.class, () -> new GameSession(null, BigDecimal.TEN, stocks));
-    assertThrows(IllegalArgumentException.class, () -> new GameSession(" ", BigDecimal.TEN, stocks));
+    assertThrows(IllegalArgumentException.class,
+        () -> new GameSession(null, BigDecimal.TEN, stocks));
+    assertThrows(IllegalArgumentException.class,
+        () -> new GameSession(" ", BigDecimal.TEN, stocks));
     assertThrows(IllegalArgumentException.class, () -> new GameSession("Uy", null, stocks));
     assertThrows(IllegalArgumentException.class, () -> new GameSession("Uy", BigDecimal.TEN, null));
   }
@@ -72,6 +74,33 @@ class GameSessionTest {
   }
 
   @Test
+  void sellAllowsPartialQuantityFromSingleBundle() {
+    GameSession session = new GameSession("Uy", new BigDecimal("10000"), stocks);
+    session.buy("AAPL", 10);
+
+    Sale sale = session.sell("AAPL", 2);
+
+    assertTrue(sale.isCommitted());
+    assertEquals(2, session.getTransactions().size());
+    assertEquals(1, session.getHoldings().size());
+    assertEquals(0,
+        session.getHoldings().getFirst().getQuantity().compareTo(new BigDecimal("8")));
+  }
+
+  @Test
+  void sellCanConsumeAcrossMultipleBundlesOfSameStock() {
+    GameSession session = new GameSession("Uy", new BigDecimal("10000"), stocks);
+    session.buy("AAPL", 10);
+    session.buy("AAPL", 2);
+
+    assertTrue(session.canSell("AAPL", 12));
+    Sale sale = session.sell("AAPL", 12);
+
+    assertTrue(sale.isCommitted());
+    assertTrue(session.getHoldings().isEmpty());
+  }
+
+  @Test
   void sellRejectsInvalidInputAndMissingShare() {
     GameSession session = new GameSession("Uy", new BigDecimal("1000"), stocks);
 
@@ -87,7 +116,7 @@ class GameSessionTest {
     GameSession session = new GameSession("Uy", new BigDecimal("1000"), stocks);
     AtomicInteger notifications = new AtomicInteger(0);
     session.addObserver(notifications::incrementAndGet);
-    int before = session.getCurrentWeek();
+    final int before = session.getCurrentWeek();
 
     session.nextWeek();
 
@@ -189,7 +218,7 @@ class GameSessionTest {
     GameSession session = new GameSession("Uy", new BigDecimal("1000"), stocks);
     AtomicInteger notifications = new AtomicInteger(0);
     session.addObserver(notifications::incrementAndGet);
-    int before = session.getCurrentWeek();
+    final int before = session.getCurrentWeek();
 
     session.advanceExchangeWeek();
     session.refreshDerivedState();
@@ -197,6 +226,18 @@ class GameSessionTest {
 
     assertEquals(before + 1, session.getCurrentWeek());
     assertEquals(1, notifications.get());
+  }
+
+  @Test
+  void playerStatusUsesCurrentWeekNotTransactionWeeks() {
+    GameSession session = new GameSession("Uy", new BigDecimal("1000"), stocks);
+    session.getPlayer().addMoney(new BigDecimal("1000"));
+    for (int i = 0; i < 19; i++) {
+      session.nextWeek();
+    }
+
+    assertEquals(20, session.getCurrentWeek());
+    assertEquals(PlayerStatus.SPECULATOR, session.getPlayerStatus());
   }
 }
 

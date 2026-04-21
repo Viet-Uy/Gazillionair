@@ -1,13 +1,13 @@
 package edu.ntnu.idi.bidata.group5.model;
 
-import edu.ntnu.idi.bidata.group5.service.Exchange;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class PlayerTest {
 
@@ -30,25 +30,25 @@ class PlayerTest {
   @Test
   void constructorThrowsOnNullName() {
     assertThrows(IllegalArgumentException.class,
-            () -> new Player(null, new BigDecimal("1000")));
+        () -> new Player(null, new BigDecimal("1000")));
   }
 
   @Test
   void constructorThrowsOnBlankName() {
     assertThrows(IllegalArgumentException.class,
-            () -> new Player("   ", new BigDecimal("1000")));
+        () -> new Player("   ", new BigDecimal("1000")));
   }
 
   @Test
   void constructorThrowsOnNullStartingMoney() {
     assertThrows(IllegalArgumentException.class,
-            () -> new Player("Test", null));
+        () -> new Player("Test", null));
   }
 
   @Test
   void constructorThrowsOnNegativeStartingMoney() {
     assertThrows(IllegalArgumentException.class,
-            () -> new Player("Test", new BigDecimal("-100")));
+        () -> new Player("Test", new BigDecimal("-100")));
   }
 
   @Test
@@ -65,7 +65,7 @@ class PlayerTest {
   @Test
   void addMoneyWithNegativeAmount() {
     assertThrows(IllegalArgumentException.class,
-            () -> player.addMoney(new BigDecimal("-100")));
+        () -> player.addMoney(new BigDecimal("-100")));
   }
 
   @Test
@@ -100,7 +100,7 @@ class PlayerTest {
   @Test
   void addMoneyWithNullAmount() {
     assertThrows(IllegalArgumentException.class,
-            () -> player.addMoney(null));
+        () -> player.addMoney(null));
   }
 
   @Test
@@ -112,19 +112,19 @@ class PlayerTest {
   @Test
   void withdrawMoneyWithInsufficientFunds() {
     assertThrows(IllegalStateException.class,
-            () -> player.withdrawMoney(new BigDecimal("1500")));
+        () -> player.withdrawMoney(new BigDecimal("1500")));
   }
 
   @Test
   void withdrawMoneyWithNegativeAmount() {
     assertThrows(IllegalArgumentException.class,
-            () -> player.withdrawMoney(new BigDecimal("-100")));
+        () -> player.withdrawMoney(new BigDecimal("-100")));
   }
 
   @Test
   void withdrawMoneyWithNullAmount() {
     assertThrows(IllegalArgumentException.class,
-            () -> player.withdrawMoney(null));
+        () -> player.withdrawMoney(null));
   }
 
   @Test
