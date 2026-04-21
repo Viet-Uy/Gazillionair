@@ -124,21 +124,13 @@ public class StartView {
   }
 
   /**
-   * Creates the header section with logo, title, and subtitle.
+   * Creates the header section with title, and subtitle.
    *
    * @return VBox containing header elements
    */
   private VBox createHeaderSection() {
     VBox section = new VBox(16);
     section.setAlignment(Pos.CENTER);
-
-    Circle logo = new Circle(40);
-    LinearGradient gradient = new LinearGradient(
-        0.0, 0.0, 1.0, 1.0, true, null,
-        new Stop(0.0, Color.web("#22c55e")),
-        new Stop(1.0, Color.web("#10b981"))
-    );
-    logo.setFill(gradient);
 
     Label title = new Label("Gazillionair");
     title.setFont(Font.font("System", FontWeight.BOLD, 48));
@@ -148,7 +140,7 @@ public class StartView {
     subtitle.setFont(Font.font("System", 20));
     subtitle.setTextFill(Color.web("#cbd5e1"));
 
-    section.getChildren().addAll(logo, title, subtitle);
+    section.getChildren().addAll(title, subtitle);
     return section;
   }
 
