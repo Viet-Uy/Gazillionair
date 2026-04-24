@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -167,13 +168,21 @@ public class NewsView {
             + "-fx-border-radius: 8;");
 
     newsFeedContainer.setStyle("-fx-spacing: 12;");
+    ScrollPane feedScrollPane = new ScrollPane(newsFeedContainer);
+    feedScrollPane.setFitToWidth(true);
+    feedScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+    feedScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+    feedScrollPane.setStyle(
+        "-fx-background: transparent; "
+            + "-fx-background-color: transparent;");
+    VBox.setVgrow(feedScrollPane, Priority.ALWAYS);
 
     noNewsLabel.setFont(Font.font("System", 12));
     noNewsLabel.setTextFill(Color.web("#64748b"));
     noNewsLabel.setAlignment(Pos.CENTER);
     VBox.setVgrow(noNewsLabel, Priority.ALWAYS);
 
-    scrollContainer.getChildren().add(newsFeedContainer);
+    scrollContainer.getChildren().add(feedScrollPane);
     return scrollContainer;
   }
 
