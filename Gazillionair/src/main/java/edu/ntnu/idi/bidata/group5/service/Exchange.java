@@ -44,6 +44,9 @@ public class Exchange {
   /** The current trading week. */
   private int week;
 
+  /** Map storing pending news impact for each stock. */
+  private final Map<String, BigDecimal> newsImpactMap;
+
   /**
    * Constructs a new {@code Exchange} with the given name and stocks.
    * The trading week starts at week 1.
@@ -76,6 +79,7 @@ public class Exchange {
     this.name = name;
     this.week = 1;
     this.random = new Random();
+    this.newsImpactMap = new HashMap<>();
   }
 
   public String getName() {
@@ -189,9 +193,11 @@ public class Exchange {
 
     for (Stock stock : stockMap.values()) {
       BigDecimal current = stock.getSalesPrice();
-      BigDecimal newPrice = applyRandomChange(current);
+      BigDecimal newsImpact = newsImpactMap.getOrDefault(stock.getSymbol(), BigDecimal.ZERO);
+      BigDecimal newPrice = applyRandomChange(current, newsImpact);
       stock.addNewSalesPrice(newPrice);
     }
+    newsImpactMap.clear();
   }
 
   /**
@@ -232,8 +238,9 @@ public class Exchange {
         .toList();
   }
 
-  private BigDecimal applyRandomChange(BigDecimal current) {
+  private BigDecimal applyRandomChange(BigDecimal current, BigDecimal newsImpact) {
     BigDecimal changePercent = randomChangePercent();
+    changePercent = changePercent.add(newsImpact);
 
     BigDecimal multiplier = BigDecimal.ONE.add(changePercent);
     BigDecimal newPrice = current.multiply(multiplier);
@@ -259,5 +266,56 @@ public class Exchange {
 
   private BigDecimal randomBetween(BigDecimal min, BigDecimal max) {
     return min.add(max.subtract(min).multiply(BigDecimal.valueOf(random.nextDouble())));
+  }
+
+  /**
+   * Applies news sentiment impact to affected stocks.
+   * Impact is accumulated and applied during the next advance() call.
+   *
+   * @param symbol the stock symbol or "Market-wide" for all stocks
+   * @param sentiment the news sentiment: "positive", "negative", or "neutral"
+   */
+  public void applyNewsImpact(String symbol, String sentiment) {
+    if (symbol == null || symbol.isBlank() || sentiment == null || sentiment.isBlank()) {
+      return;
+    }
+
+    BigDecimal impactPercent = getNewsImpactPercent(sentiment);
+    if (impactPercent.compareTo(BigDecimal.ZERO) == 0) {
+      return;
+    }
+
+    if ("Market-wide".equalsIgnoreCase(symbol)) {
+      for (Stock stock : stockMap.values()) {
+        accumImpactForStock(stock.getSymbol(), impactPercent);
+      }
+    } else {
+      String[] symbols = symbol.split(",\\s*");
+      for (String sym : symbols) {
+        try {
+          Stock stock = getStock(sym.toUpperCase());
+          accumImpactForStock(stock.getSymbol(), impactPercent);
+        } catch (IllegalArgumentException e) {
+          // Symbol not found, skip it
+        }
+      }
+    }
+  }
+
+  private void accumImpactForStock(String symbol, BigDecimal impactPercent) {
+    newsImpactMap.put(symbol, newsImpactMap.getOrDefault(symbol, BigDecimal.ZERO)
+        .add(impactPercent));
+  }
+
+  private BigDecimal getNewsImpactPercent(String sentiment) {
+    switch (sentiment.toLowerCase()) {
+      case "positive":
+        return new BigDecimal("0.02"); // 2% increase
+      case "negative":
+        return new BigDecimal("-0.03"); // 3% decrease
+      case "neutral":
+      default:
+        return BigDecimal.ZERO; // No impact
+    }
   }
 }
