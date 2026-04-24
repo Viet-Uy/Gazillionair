@@ -13,6 +13,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -73,7 +74,7 @@ public class MarketView {
   private void initializeUi() {
     root.setStyle("-fx-background-color: transparent;");
     HBox searchBox = createSearchBox();
-    HBox content = new HBox(16, stockTable, createTradePanel());
+    HBox content = new HBox(16, stockTable, createTradePanelContainer());
     HBox.setHgrow(stockTable, Priority.ALWAYS);
     VBox.setVgrow(content, Priority.ALWAYS);
     root.getChildren().addAll(searchBox, content);
@@ -168,6 +169,20 @@ public class MarketView {
             sellButton,
             tradeFeedbackLabel);
     return tradePanel;
+  }
+
+  private ScrollPane createTradePanelContainer() {
+    ScrollPane tradePanelContainer = new ScrollPane(createTradePanel());
+    tradePanelContainer.setFitToWidth(true);
+    tradePanelContainer.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+    tradePanelContainer.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+    tradePanelContainer.setPrefWidth(300);
+    tradePanelContainer.setMinWidth(300);
+    tradePanelContainer.setMaxWidth(300);
+    tradePanelContainer.setStyle(
+        "-fx-background: transparent; "
+            + "-fx-background-color: transparent;");
+    return tradePanelContainer;
   }
 
   private String inputStyle() {
