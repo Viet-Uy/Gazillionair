@@ -4,10 +4,12 @@ import edu.ntnu.idi.bidata.group5.model.observer.ModelObserver;
 import edu.ntnu.idi.bidata.group5.model.observer.ObservableModel;
 import edu.ntnu.idi.bidata.group5.service.Exchange;
 import edu.ntnu.idi.bidata.group5.service.GameEngine;
+import edu.ntnu.idi.bidata.group5.service.NewsGenerator;
 import edu.ntnu.idi.bidata.group5.service.TransactionFactory;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Aggregates runtime game state and exposes use-case style operations for the UI layer.
@@ -20,6 +22,8 @@ public class GameSession implements ObservableModel {
   private final List<ModelObserver> observers;
   private final TransactionFactory transactionFactory;
   private final GameEngine gameEngine;
+  private final List<News> news;
+  private final NewsGenerator newsGenerator;
 
   /**
    * Creates a new game session.
@@ -45,6 +49,9 @@ public class GameSession implements ObservableModel {
     this.observers = new ArrayList<>();
     this.transactionFactory = new TransactionFactory();
     this.gameEngine = new GameEngine();
+    this.news = new ArrayList<>();
+    this.newsGenerator = new NewsGenerator();
+    generateNewsForCurrentWeek();
   }
 
   /**
@@ -314,9 +321,83 @@ public class GameSession implements ObservableModel {
   }
 
   /**
+   * Generates and adds new news for the current week.
+   * Called automatically when advancing to the next week.
+   */
+  public void generateNewsForCurrentWeek() {
+    int newsCount = 2 + (int) (Math.random() * 4);
+    for (int i = 0; i < newsCount; i++) {
+      news.add(newsGenerator.generateNews(getCurrentWeek()));
+    }
+  }
+
+  /**
+   * Generates and adds new news for the next week.
+   * Should be called before advancing to ensure news is ready when the week advances.
+   */
+  public void generateNewsForNextWeek() {
+    int nextWeek = getCurrentWeek() + 1;
+    int newsCount = 2 + (int) (Math.random() * 4);
+    for (int i = 0; i < newsCount; i++) {
+      news.add(newsGenerator.generateNews(nextWeek));
+    }
+  }
+
+  /**
+   * Returns all news articles.
+   *
+   * @return all news articles
+   */
+  public List<News> getAllNews() {
+    return new ArrayList<>(news);
+  }
+
+  /**
+   * Returns news articles for a specific week.
+   *
+   * @param week the week number
+   * @return news articles for the week
+   */
+  public List<News> getNewsForWeek(int week) {
+    if (week < 1) {
+      throw new IllegalArgumentException("Week must be at least 1");
+    }
+    return news.stream()
+        .filter(n -> n.getWeek() == week)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Returns news articles with a specific sentiment.
+   *
+   * @param sentiment the sentiment type
+   * @return news articles with the sentiment
+   */
+  public List<News> getNewsBySentiment(News.Sentiment sentiment) {
+    if (sentiment == null) {
+      throw new IllegalArgumentException("Sentiment cannot be null");
+    }
+    return news.stream()
+        .filter(n -> n.getSentiment() == sentiment)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Applies the impact of news articles on stock prices for the current week.
+   */
+  public void applyNewsImpactOnStocks() {
+    int currentWeek = getCurrentWeek();
+    List<News> currentWeekNews = getNewsForWeek(currentWeek);
+    for (News newsItem : currentWeekNews) {
+      exchange.applyNewsImpact(newsItem.getAffectedStocks(), newsItem.getSentimentAsString());
+    }
+  }
+
+  /**
    * Advances the session by one week.
    */
   public void nextWeek() {
+    generateNewsForNextWeek();
     gameEngine.nextWeek(this);
   }
 
