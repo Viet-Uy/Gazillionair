@@ -1,6 +1,7 @@
 package edu.ntnu.idi.bidata.group5.ui.view;
 
 import edu.ntnu.idi.bidata.group5.ui.view.components.NewsCard;
+import java.util.ArrayList;
 import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -103,11 +104,22 @@ public class NewsView {
    * Sets up the week filter dropdown with default and week options.
    */
   private void setupWeekFilter() {
-    weekFilter.setItems(FXCollections.observableArrayList(
-        "All Weeks", "Week 1", "Week 2", "Week 3", "Week 4", "Week 5"
-    ));
-    weekFilter.setValue("All Weeks");
+    updateWeekFilterOptions(5);
     styleComboBox(weekFilter);
+  }
+
+  /**
+   * Updates the week filter dropdown to include weeks up to the given max week.
+   *
+   * @param maxWeek the maximum week number to include in the filter
+   */
+  public void updateWeekFilterOptions(int maxWeek) {
+    List<String> weeks = new ArrayList<>();
+    weeks.add("All Weeks");
+    for (int i = 1; i <= Math.max(5, maxWeek); i++) {
+      weeks.add("Week " + i);
+    }
+    weekFilter.setItems(FXCollections.observableArrayList(weeks));
   }
 
   /**
@@ -250,6 +262,19 @@ public class NewsView {
    */
   public ComboBox<String> getSentimentFilterControl() {
     return sentimentFilter;
+  }
+
+  /**
+   * Sets the week filter to a specific week without triggering listener.
+   *
+   * @param week the week number to filter by
+   */
+  public void setWeekFilterValue(int week) {
+    if (week < 1) {
+      weekFilter.setValue("All Weeks");
+    } else {
+      weekFilter.setValue("Week " + week);
+    }
   }
 
   /**

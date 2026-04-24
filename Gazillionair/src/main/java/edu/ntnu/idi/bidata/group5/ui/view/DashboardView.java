@@ -309,8 +309,7 @@ public class DashboardView implements ModelObserver {
       statsView = new StatsView(statsController);
 
       NewsView newsView = new NewsView();
-      newsController = new NewsController(newsView);
-      populateMockNews(newsView);
+      newsController = new NewsController(newsView, session);
 
       marketTab = createTab("Market", marketView.getRoot());
       newsTab = createTab("News", newsView.getRoot());
@@ -373,52 +372,6 @@ public class DashboardView implements ModelObserver {
     return String.format("$%.2f", amount);
   }
 
-  /**
-   * Populates the news view with mock news data for testing.
-   *
-   * @param newsView the NewsView to populate
-   */
-  private void populateMockNews(NewsView newsView) {
-    newsView.addNewsCard(
-        "Supply Chain Volatility Escalates",
-        "Industry analysts report increased logistical pressure affecting multiple commodity "
-            + "suppliers. Global container rates have experienced notable fluctuation.",
-        "IND, AER, TRN",
-        2,
-        "negative");
-
-    newsView.addNewsCard(
-        "Tech Sector Infrastructure Under Scrutiny",
-        "New compliance requirements proposed for cloud service providers. Implementation "
-            + "timeline remains uncertain pending legislative review.",
-        "TECH, SOFT",
-        2,
-        "neutral");
-
-    newsView.addNewsCard(
-        "Consumer Sentiment Shows Mixed Signals",
-        "Latest market research indicates divergent spending patterns across demographics. "
-            + "Discretionary spending categories demonstrate uneven momentum.",
-        "CONS, RET",
-        2,
-        "neutral");
-
-    newsView.addNewsCard(
-        "Energy Markets Experience Compression",
-        "Fuel commodity prices exhibit compressed volatility amid geopolitical uncertainty. "
-            + "Hedging activity accelerates across energy sector participants.",
-        "ENRG, OIL",
-        2,
-        "negative");
-
-    newsView.addNewsCard(
-        "Market-Wide Momentum Suggests Expansion",
-        "Macroeconomic indicators reflect tentative optimism. Several leading indices show "
-            + "early signs of upward trajectory formation.",
-        "Market-wide",
-        2,
-        "positive");
-  }
 
   /**
    * Handles Next Week button action.
@@ -458,6 +411,10 @@ public class DashboardView implements ModelObserver {
 
       if (marketController != null) {
         marketController.refreshStockTable();
+      }
+
+      if (newsController != null) {
+        newsController.refreshForCurrentWeek();
       }
 
       if (portfolioView != null) {

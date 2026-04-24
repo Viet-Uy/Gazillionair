@@ -27,6 +27,7 @@ public class GameEngine {
     if (session == null) {
       throw new IllegalArgumentException("Session cannot be null");
     }
+    session.applyNewsImpactOnStocks();
     session.advanceExchangeWeek();
     session.refreshDerivedState();
     session.publishModelChanged();
