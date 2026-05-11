@@ -142,17 +142,17 @@ public class Player {
   }
 
   /**
-   * Determines the player's status based on their net worth.
+   * Determines the player's status based on weeks with transactions and net worth growth.
    *
    * @return the player's status as a PlayerStatus enum value
    */
   public PlayerStatus getStatus() {
     BigDecimal netWorth = getNetWorth();
-    int weeks = transactionArchive.countDistinctWeeks();
+    int weeksWithTrades = transactionArchive.countDistinctWeeks();
     BigDecimal growth = netWorth.divide(startingMoney, 2, HALF_UP);
-    if (weeks >= 20 && growth.compareTo(BigDecimal.valueOf(2.0)) >= 0) {
+    if (weeksWithTrades >= 20 && growth.compareTo(BigDecimal.valueOf(2.0)) >= 0) {
       return PlayerStatus.SPECULATOR;
-    } else if (weeks >= 10 && growth.compareTo(BigDecimal.valueOf(1.2)) >= 0) {
+    } else if (weeksWithTrades >= 10 && growth.compareTo(BigDecimal.valueOf(1.2)) >= 0) {
       return PlayerStatus.INVESTOR;
     } else {
       return PlayerStatus.NOVICE;

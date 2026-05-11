@@ -150,11 +150,11 @@ public class DashboardView implements ModelObserver {
     playerName.setFont(Font.font("System", FontWeight.BOLD, 20));
     playerName.setTextFill(Color.web("#ffffff"));
 
-    statusBadge = new Label(session.getPlayerStatus().toString());
+    statusBadge = new Label(session.getPlayer().getStatus().toString());
     statusBadge.setFont(Font.font("System", FontWeight.MEDIUM, 12));
     statusBadge.setTextFill(Color.web("#ffffff"));
     statusBadge.setPadding(new Insets(4, 12, 4, 12));
-    applyStatusBadgeStyle(session.getPlayerStatus());
+    applyStatusBadgeStyle(session.getPlayer().getStatus());
 
     HBox playerInfo = new HBox(12);
     playerInfo.setAlignment(Pos.CENTER_LEFT);
@@ -409,8 +409,8 @@ public class DashboardView implements ModelObserver {
       cashLabel.setText(formatMoney(session.getPlayer().getMoney()));
       holdingsLabel.setText(String.valueOf(session.getHoldings().size()));
       weekLabel.setText(String.valueOf(session.getCurrentWeek()));
-      statusBadge.setText(session.getPlayerStatus().toString());
-      applyStatusBadgeStyle(session.getPlayerStatus());
+      statusBadge.setText(session.getPlayer().getStatus().toString());
+      applyStatusBadgeStyle(session.getPlayer().getStatus());
       setOverallPerformance();
 
       if (marketController != null) {

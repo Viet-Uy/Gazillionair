@@ -511,7 +511,7 @@ public class GameSession implements ObservableModel {
    */
   public void refreshDerivedState() {
     getNetWorth();
-    getPlayerStatus();
+    player.getStatus();
   }
 
   /**
