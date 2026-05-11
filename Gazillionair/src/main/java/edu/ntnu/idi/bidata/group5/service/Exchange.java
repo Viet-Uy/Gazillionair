@@ -91,6 +91,18 @@ public class Exchange {
   }
 
   /**
+   * Sets the current exchange week.
+   *
+   * @param week the week number
+   */
+  public void setWeek(int week) {
+    if (week < 1) {
+      throw new IllegalArgumentException("Week must be at least 1");
+    }
+    this.week = week;
+  }
+
+  /**
    * Returns the stock with the given symbol.
    *
    * @param symbol the stock symbol

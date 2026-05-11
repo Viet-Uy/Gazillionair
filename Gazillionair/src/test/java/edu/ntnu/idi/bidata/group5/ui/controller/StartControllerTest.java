@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import edu.ntnu.idi.bidata.group5.model.GameSession;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
@@ -58,6 +60,37 @@ class StartControllerTest {
     Path malformedFile = Path.of("src", "test", "resources", "stocks_malformed.csv");
     assertThrows(IllegalStateException.class,
         () -> controller.startNewGame("Uy", new BigDecimal("1000"), malformedFile));
+  }
+
+  @Test
+  void saveAndLoadGameRoundTripWorks() throws IOException {
+    StartController controller = new StartController();
+    GameSession session = controller.startWithSampleData("Uy", new BigDecimal("1000"));
+    session.buy("AAPL", 1);
+    session.nextWeek();
+
+    Path saveFile = Files.createTempFile("gazillionair-start-controller-", ".json");
+    try {
+      controller.saveGame(session, saveFile);
+      GameSession restored = controller.loadGame(saveFile);
+
+      assertEquals(session.getPlayer().getName(), restored.getPlayer().getName());
+      assertEquals(session.getCurrentWeek(), restored.getCurrentWeek());
+      assertEquals(0, session.getCashBalance().compareTo(restored.getCashBalance()));
+      assertEquals(session.getTransactions().size(), restored.getTransactions().size());
+      assertEquals(session.getHoldings().size(), restored.getHoldings().size());
+    } finally {
+      Files.deleteIfExists(saveFile);
+    }
+  }
+
+  @Test
+  void saveAndLoadRejectsNullPath() {
+    StartController controller = new StartController();
+    GameSession session = controller.startWithSampleData("Uy", new BigDecimal("1000"));
+
+    assertThrows(IllegalArgumentException.class, () -> controller.saveGame(session, null));
+    assertThrows(IllegalArgumentException.class, () -> controller.loadGame(null));
   }
 }
 

@@ -108,6 +108,7 @@ public class StartView {
     final VBox capitalSection = createCapitalSection();
     final VBox fileUploadSection = createFileUploadSection();
     final VBox sampleDataSection = createSampleDataSection();
+    final VBox loadGameSection = createLoadGameSection();
     final VBox startGameSection = createStartGameSection();
 
     card.getChildren().addAll(
@@ -116,6 +117,7 @@ public class StartView {
         capitalSection,
         fileUploadSection,
         sampleDataSection,
+        loadGameSection,
         startGameSection
     );
 
@@ -261,6 +263,29 @@ public class StartView {
   }
 
   /**
+   * Creates the load-saved-game section.
+   *
+   * @return VBox containing load game button
+   */
+  private VBox createLoadGameSection() {
+    final VBox section = new VBox();
+    Button loadGameBtn = new Button("Load Saved Game (JSON)");
+    loadGameBtn.setPrefHeight(32);
+    loadGameBtn.setPrefWidth(Double.MAX_VALUE);
+    loadGameBtn.setFont(Font.font("System", FontWeight.MEDIUM, 14));
+    loadGameBtn.setStyle(
+        "-fx-background-color: #334155; "
+            + "-fx-text-fill: white; "
+            + "-fx-background-radius: 8; "
+            + "-fx-padding: 8px 16px; "
+            + "-fx-cursor: hand;");
+    loadGameBtn.setOnAction(ignoredEvent -> onLoadGame());
+
+    section.getChildren().add(loadGameBtn);
+    return section;
+  }
+
+  /**
    * Creates the start game button section.
    *
    * @return VBox containing start game button with hover effects
@@ -351,17 +376,39 @@ public class StartView {
       } else {
         session = controller.startWithSampleData(playerName, capital);
       }
-      DashboardView dashboardView = new DashboardView(session, stage);
-      Scene scene = new Scene(dashboardView.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
-      String cssResource = Objects.requireNonNull(
-          getClass().getResource("/styles/app.css"),
-          "CSS file not found: /styles/app.css"
-      ).toExternalForm();
-      scene.getStylesheets().add(cssResource);
-      stage.setScene(scene);
+      openDashboard(session);
     } catch (Exception e) {
       showError("Failed to start game: " + e.getMessage());
     }
+  }
+
+  private void onLoadGame() {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Load Saved Game");
+    fileChooser.getExtensionFilters().add(
+        new FileChooser.ExtensionFilter("JSON Files", "*.json")
+    );
+    File file = fileChooser.showOpenDialog(stage);
+    if (file == null) {
+      return;
+    }
+    try {
+      GameSession session = controller.loadGame(file.toPath());
+      openDashboard(session);
+    } catch (Exception e) {
+      showError("Failed to load game: " + e.getMessage());
+    }
+  }
+
+  private void openDashboard(GameSession session) {
+    DashboardView dashboardView = new DashboardView(session, stage);
+    Scene scene = new Scene(dashboardView.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
+    String cssResource = Objects.requireNonNull(
+        getClass().getResource("/styles/app.css"),
+        "CSS file not found: /styles/app.css"
+    ).toExternalForm();
+    scene.getStylesheets().add(cssResource);
+    stage.setScene(scene);
   }
 
   /**

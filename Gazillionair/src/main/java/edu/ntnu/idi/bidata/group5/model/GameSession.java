@@ -33,6 +33,13 @@ public class GameSession implements ObservableModel {
    * @param stocks initial market stocks
    */
   public GameSession(String playerName, BigDecimal startingCapital, List<Stock> stocks) {
+    this(playerName, startingCapital, stocks, true);
+  }
+
+  private GameSession(String playerName,
+                      BigDecimal startingCapital,
+                      List<Stock> stocks,
+                      boolean generateInitialNews) {
     if (playerName == null || playerName.isBlank()) {
       throw new IllegalArgumentException("Player name cannot be null or blank");
     }
@@ -51,7 +58,74 @@ public class GameSession implements ObservableModel {
     this.gameEngine = new GameEngine();
     this.news = new ArrayList<>();
     this.newsGenerator = new NewsGenerator();
-    generateNewsForCurrentWeek();
+    if (generateInitialNews) {
+      generateNewsForCurrentWeek();
+    }
+  }
+
+  /**
+   * Recreates a game session from previously persisted state.
+   *
+   * @param playerName player display name
+   * @param startingCapital original starting capital
+   * @param cashBalance current cash balance
+   * @param currentWeek current week number
+   * @param stocks market stocks with price history
+   * @param holdings current portfolio holdings
+   * @param transactions archived transactions
+   * @param newsItems generated news entries
+   * @return restored game session
+   */
+  public static GameSession restoreSession(String playerName,
+                                           BigDecimal startingCapital,
+                                           BigDecimal cashBalance,
+                                           int currentWeek,
+                                           List<Stock> stocks,
+                                           List<Share> holdings,
+                                           List<Transaction> transactions,
+                                           List<News> newsItems) {
+    if (cashBalance == null) {
+      throw new IllegalArgumentException("Cash balance cannot be null");
+    }
+    if (cashBalance.compareTo(BigDecimal.ZERO) < 0) {
+      throw new IllegalArgumentException("Cash balance cannot be negative");
+    }
+    if (currentWeek < 1) {
+      throw new IllegalArgumentException("Week must be at least 1");
+    }
+    if (holdings == null) {
+      throw new IllegalArgumentException("Holdings cannot be null");
+    }
+    if (transactions == null) {
+      throw new IllegalArgumentException("Transactions cannot be null");
+    }
+    if (newsItems == null) {
+      throw new IllegalArgumentException("News items cannot be null");
+    }
+
+    GameSession session = new GameSession(playerName, startingCapital, stocks, false);
+    session.exchange.setWeek(currentWeek);
+    adjustCashBalance(session.player, cashBalance);
+
+    for (Share holding : holdings) {
+      if (holding == null) {
+        throw new IllegalArgumentException("Holding cannot be null");
+      }
+      Stock stock = session.exchange.getStock(holding.getStock().getSymbol());
+      Share restoredHolding = new Share(stock, holding.getQuantity(), holding.getPurchasePrice());
+      session.player.getPortfolio().addShare(restoredHolding);
+    }
+
+    for (Transaction transaction : transactions) {
+      if (transaction == null) {
+        throw new IllegalArgumentException("Transaction cannot be null");
+      }
+      session.player.getTransactionArchive().add(transaction);
+    }
+
+    session.news.addAll(newsItems);
+    session.refreshDerivedState();
+    return session;
   }
 
   /**
@@ -547,5 +621,17 @@ public class GameSession implements ObservableModel {
       remaining = remaining.subtract(consumedQuantity);
     }
     return totalCost.divide(targetQuantity, 6, java.math.RoundingMode.HALF_UP);
+  }
+
+  private static void adjustCashBalance(Player player, BigDecimal targetBalance) {
+    BigDecimal currentBalance = player.getMoney();
+    int comparison = targetBalance.compareTo(currentBalance);
+    if (comparison > 0) {
+      player.addMoney(targetBalance.subtract(currentBalance));
+      return;
+    }
+    if (comparison < 0) {
+      player.withdrawMoney(currentBalance.subtract(targetBalance));
+    }
   }
 }
