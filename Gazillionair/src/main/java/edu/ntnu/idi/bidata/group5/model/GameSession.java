@@ -169,6 +169,34 @@ public class GameSession implements ObservableModel {
   }
 
   /**
+   * Returns whether the player is bankrupt.
+   * A player is bankrupt when there is no cash balance and no remaining holdings.
+   *
+   * @return true when bankrupt
+   */
+  public boolean isBankrupt() {
+    return getCashBalance().compareTo(BigDecimal.ZERO) <= 0 && !hasHoldings();
+  }
+
+  /**
+   * Returns player's current status.
+   *
+   * @return player status
+   */
+  public PlayerStatus getPlayerStatus() {
+    BigDecimal growth =
+        getNetWorth().divide(player.getStartingMoney(), 2, java.math.RoundingMode.HALF_UP);
+    int weeks = getCurrentWeek();
+    if (weeks >= 20 && growth.compareTo(BigDecimal.valueOf(2.0)) >= 0) {
+      return PlayerStatus.SPECULATOR;
+    } else if (weeks >= 10 && growth.compareTo(BigDecimal.valueOf(1.2)) >= 0) {
+      return PlayerStatus.INVESTOR;
+    } else {
+      return PlayerStatus.NOVICE;
+    }
+  }
+
+  /**
    * Searches stocks by symbol or company.
    *
    * @param query search term
