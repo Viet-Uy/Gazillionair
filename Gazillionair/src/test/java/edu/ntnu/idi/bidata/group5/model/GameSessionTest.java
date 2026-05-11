@@ -237,7 +237,7 @@ class GameSessionTest {
     }
 
     assertEquals(20, session.getCurrentWeek());
-    assertEquals(PlayerStatus.SPECULATOR, session.getPlayerStatus());
+    assertEquals(PlayerStatus.SPECULATOR, session.getPlayer().getStatus());
   }
 }
 
