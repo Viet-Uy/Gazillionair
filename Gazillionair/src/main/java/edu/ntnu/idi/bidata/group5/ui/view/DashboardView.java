@@ -3,11 +3,15 @@ package edu.ntnu.idi.bidata.group5.ui.view;
 import edu.ntnu.idi.bidata.group5.model.GameSession;
 import edu.ntnu.idi.bidata.group5.model.PlayerStatus;
 import edu.ntnu.idi.bidata.group5.model.observer.ModelObserver;
+import edu.ntnu.idi.bidata.group5.ui.controller.DashboardController;
 import edu.ntnu.idi.bidata.group5.ui.controller.MarketController;
 import edu.ntnu.idi.bidata.group5.ui.controller.NewsController;
 import edu.ntnu.idi.bidata.group5.ui.controller.PortfolioController;
 import edu.ntnu.idi.bidata.group5.ui.controller.StatsController;
 import edu.ntnu.idi.bidata.group5.ui.controller.TransactionsController;
+import edu.ntnu.idi.bidata.group5.ui.view.components.AppDialog;
+import edu.ntnu.idi.bidata.group5.ui.view.components.GameFileChooser;
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import javafx.geometry.Insets;
@@ -40,6 +44,7 @@ public class DashboardView implements ModelObserver {
   private final BorderPane root;
   private final GameSession session;
   private final Stage stage;
+  private final DashboardController dashboardController;
 
   private Label netWorthLabel;
   private Label cashLabel;
@@ -81,6 +86,7 @@ public class DashboardView implements ModelObserver {
   public DashboardView(GameSession session, Stage stage) {
     this.session = session;
     this.stage = stage;
+    this.dashboardController = session == null ? null : new DashboardController(session);
     this.root = new BorderPane();
     initializeUi();
     if (session != null) {
@@ -173,6 +179,16 @@ public class DashboardView implements ModelObserver {
             + "-fx-cursor: hand;");
     nextWeekBtn.setOnAction(e -> onNextWeek());
 
+    Button saveAndExitBtn = new Button("Save & Exit");
+    saveAndExitBtn.setStyle(
+        "-fx-background-color: #3b82f6; "
+            + "-fx-text-fill: white; "
+            + "-fx-padding: 8px 16px; "
+            + "-fx-background-radius: 8; "
+            + "-fx-font-size: 14; "
+            + "-fx-cursor: hand;");
+    saveAndExitBtn.setOnAction(e -> onSaveAndExit());
+
     Button sellAllExitBtn = new Button("Sell All & Exit");
     sellAllExitBtn.setStyle(
         "-fx-background-color: #ef4444; "
@@ -183,7 +199,7 @@ public class DashboardView implements ModelObserver {
             + "-fx-cursor: hand;");
     sellAllExitBtn.setOnAction(e -> onSellAllAndExit());
 
-    actionButtons.getChildren().addAll(nextWeekBtn, sellAllExitBtn);
+    actionButtons.getChildren().addAll(nextWeekBtn, saveAndExitBtn, sellAllExitBtn);
     HBox.setHgrow(playerInfo, Priority.ALWAYS);
 
     headerContent.getChildren().addAll(playerInfo, actionButtons);
@@ -382,7 +398,7 @@ public class DashboardView implements ModelObserver {
   private void onNextWeek() {
     if (session != null) {
       BigDecimal before = session.getNetWorth();
-      session.nextWeek();
+      dashboardController.nextWeek();
       BigDecimal after = session.getNetWorth();
       setWeeklyChange(after.subtract(before));
       checkBankruptcyAndEndGame();
@@ -391,10 +407,29 @@ public class DashboardView implements ModelObserver {
 
   private void onSellAllAndExit() {
     if (session != null) {
-      session.sellAllHoldings();
+      dashboardController.sellAllHoldings();
     }
     if (stage != null) {
       stage.close();
+    }
+  }
+
+  private void onSaveAndExit() {
+    if (session == null) {
+      return;
+    }
+    File file = GameFileChooser.chooseSaveGameJson(stage);
+    if (file == null) {
+      return;
+    }
+    try {
+      dashboardController.saveGame(file.toPath());
+      AppDialog.showInfo(stage, "Game Saved", "Game state saved successfully.");
+      if (stage != null) {
+        stage.close();
+      }
+    } catch (IllegalStateException e) {
+      AppDialog.showError(stage, "Save Failed", "Failed to save game: " + e.getMessage());
     }
   }
 

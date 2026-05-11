@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,7 +19,6 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -206,6 +206,7 @@ public class MarketView {
         + "-fx-cursor: hand;";
   }
 
+  @SuppressWarnings("unchecked")
   private TableView<Stock> createStockTable() {
     TableView<Stock> table = new TableView<>();
     table.setStyle(
@@ -215,9 +216,23 @@ public class MarketView {
     table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
     table.setItems(tableData);
 
-    final TableColumn<Stock, String> symbolCol = createColumn("Symbol", 80, "symbol");
-    final TableColumn<Stock, String> companyCol = createColumn("Company", 150, "company");
-    final TableColumn<Stock, BigDecimal> priceCol = createColumn("Price", 100, "salesPrice");
+    final TableColumn<Stock, String> symbolCol = new TableColumn<>("Symbol");
+    symbolCol.setPrefWidth(80);
+    symbolCol.setCellValueFactory(
+        cellData -> new SimpleStringProperty(cellData.getValue().getSymbol()));
+    symbolCol.setStyle("-fx-text-alignment: LEFT;");
+
+    final TableColumn<Stock, String> companyCol = new TableColumn<>("Company");
+    companyCol.setPrefWidth(150);
+    companyCol.setCellValueFactory(
+        cellData -> new SimpleStringProperty(cellData.getValue().getCompany()));
+    companyCol.setStyle("-fx-text-alignment: LEFT;");
+
+    final TableColumn<Stock, BigDecimal> priceCol = new TableColumn<>("Price");
+    priceCol.setPrefWidth(100);
+    priceCol.setCellValueFactory(
+        cellData -> new SimpleObjectProperty<>(cellData.getValue().getSalesPrice()));
+    priceCol.setStyle("-fx-text-alignment: LEFT;");
     TableColumn<Stock, String> changeCol = new TableColumn<>("Change");
     changeCol.setPrefWidth(100);
     changeCol.setCellValueFactory(
@@ -241,14 +256,6 @@ public class MarketView {
               }
             });
     return table;
-  }
-
-  private <T> TableColumn<Stock, T> createColumn(String title, double width, String property) {
-    TableColumn<Stock, T> column = new TableColumn<>(title);
-    column.setPrefWidth(width);
-    column.setCellValueFactory(new PropertyValueFactory<>(property));
-    column.setStyle("-fx-text-alignment: LEFT;");
-    return column;
   }
 
   private TableCell<Stock, String> createChangeCell() {

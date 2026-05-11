@@ -73,6 +73,13 @@ public abstract class Transaction {
   }
 
   /**
+   * Marks this transaction as committed when reconstructing archived game state.
+   */
+  public void markCommittedForRestore() {
+    this.committed = true;
+  }
+
+  /**
    * Commits the transaction, updating the player's portfolio and cash balance accordingly.
    *
    * @param player the player for whom the transaction is being committed

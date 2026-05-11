@@ -9,7 +9,6 @@ import edu.ntnu.idi.bidata.group5.service.TransactionFactory;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Aggregates runtime game state and exposes use-case style operations for the UI layer.
@@ -33,6 +32,13 @@ public class GameSession implements ObservableModel {
    * @param stocks initial market stocks
    */
   public GameSession(String playerName, BigDecimal startingCapital, List<Stock> stocks) {
+    this(playerName, startingCapital, stocks, true);
+  }
+
+  private GameSession(String playerName,
+                      BigDecimal startingCapital,
+                      List<Stock> stocks,
+                      boolean generateInitialNews) {
     if (playerName == null || playerName.isBlank()) {
       throw new IllegalArgumentException("Player name cannot be null or blank");
     }
@@ -51,7 +57,74 @@ public class GameSession implements ObservableModel {
     this.gameEngine = new GameEngine();
     this.news = new ArrayList<>();
     this.newsGenerator = new NewsGenerator();
-    generateNewsForCurrentWeek();
+    if (generateInitialNews) {
+      generateNewsForCurrentWeek();
+    }
+  }
+
+  /**
+   * Recreates a game session from previously persisted state.
+   *
+   * @param playerName player display name
+   * @param startingCapital original starting capital
+   * @param cashBalance current cash balance
+   * @param currentWeek current week number
+   * @param stocks market stocks with price history
+   * @param holdings current portfolio holdings
+   * @param transactions archived transactions
+   * @param newsItems generated news entries
+   * @return restored game session
+   */
+  public static GameSession restoreSession(String playerName,
+                                           BigDecimal startingCapital,
+                                           BigDecimal cashBalance,
+                                           int currentWeek,
+                                           List<Stock> stocks,
+                                           List<Share> holdings,
+                                           List<Transaction> transactions,
+                                           List<News> newsItems) {
+    if (cashBalance == null) {
+      throw new IllegalArgumentException("Cash balance cannot be null");
+    }
+    if (cashBalance.compareTo(BigDecimal.ZERO) < 0) {
+      throw new IllegalArgumentException("Cash balance cannot be negative");
+    }
+    if (currentWeek < 1) {
+      throw new IllegalArgumentException("Week must be at least 1");
+    }
+    if (holdings == null) {
+      throw new IllegalArgumentException("Holdings cannot be null");
+    }
+    if (transactions == null) {
+      throw new IllegalArgumentException("Transactions cannot be null");
+    }
+    if (newsItems == null) {
+      throw new IllegalArgumentException("News items cannot be null");
+    }
+
+    GameSession session = new GameSession(playerName, startingCapital, stocks, false);
+    session.exchange.setWeek(currentWeek);
+    adjustCashBalance(session.player, cashBalance);
+
+    for (Share holding : holdings) {
+      if (holding == null) {
+        throw new IllegalArgumentException("Holding cannot be null");
+      }
+      Stock stock = session.exchange.getStock(holding.getStock().getSymbol());
+      Share restoredHolding = new Share(stock, holding.getQuantity(), holding.getPurchasePrice());
+      session.player.getPortfolio().addShare(restoredHolding);
+    }
+
+    for (Transaction transaction : transactions) {
+      if (transaction == null) {
+        throw new IllegalArgumentException("Transaction cannot be null");
+      }
+      session.player.getTransactionArchive().add(transaction);
+    }
+
+    session.news.addAll(newsItems);
+    session.refreshDerivedState();
+    return session;
   }
 
   /**
@@ -268,12 +341,7 @@ public class GameSession implements ObservableModel {
    * @return committed purchase
    */
   public Purchase buy(String symbol, BigDecimal quantity) {
-    if (symbol == null || symbol.isBlank()) {
-      throw new IllegalArgumentException("Symbol cannot be null or blank");
-    }
-    if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("Quantity must be greater than zero");
-    }
+    validateTradeInput(symbol, quantity);
 
     Stock stock = exchange.getStock(symbol);
     Share share = new Share(stock, quantity, stock.getSalesPrice());
@@ -302,15 +370,9 @@ public class GameSession implements ObservableModel {
    * @return committed sale
    */
   public Sale sell(String symbol, BigDecimal quantity) {
-    if (symbol == null || symbol.isBlank()) {
-      throw new IllegalArgumentException("Symbol cannot be null or blank");
-    }
-    if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("Quantity must be greater than zero");
-    }
+    validateTradeInput(symbol, quantity);
 
     Stock stock = exchange.getStock(symbol);
-    BigDecimal targetQuantity = quantity;
     List<Share> ownedShares = player.getPortfolio().getShares(symbol.toUpperCase());
     if (ownedShares.isEmpty()) {
       throw new IllegalStateException("No owned share has enough quantity to sell");
@@ -318,12 +380,12 @@ public class GameSession implements ObservableModel {
     BigDecimal totalOwnedQuantity = ownedShares.stream()
         .map(Share::getQuantity)
         .reduce(BigDecimal.ZERO, BigDecimal::add);
-    if (totalOwnedQuantity.compareTo(targetQuantity) < 0) {
+    if (totalOwnedQuantity.compareTo(quantity) < 0) {
       throw new IllegalStateException("No owned share has enough quantity to sell");
     }
 
-    BigDecimal weightedPurchasePrice = calculateWeightedPurchasePrice(ownedShares, targetQuantity);
-    Share shareToSell = new Share(stock, targetQuantity, weightedPurchasePrice);
+    BigDecimal weightedPurchasePrice = calculateWeightedPurchasePrice(ownedShares, quantity);
+    Share shareToSell = new Share(stock, quantity, weightedPurchasePrice);
     Sale sale = transactionFactory.createSale(shareToSell, getCurrentWeek());
     sale.commit(player);
     publishModelChanged();
@@ -335,10 +397,7 @@ public class GameSession implements ObservableModel {
    * Called automatically when advancing to the next week.
    */
   public void generateNewsForCurrentWeek() {
-    int newsCount = 2 + (int) (Math.random() * 4);
-    for (int i = 0; i < newsCount; i++) {
-      news.add(newsGenerator.generateNews(getCurrentWeek()));
-    }
+    addGeneratedNewsForWeek(getCurrentWeek());
   }
 
   /**
@@ -346,11 +405,7 @@ public class GameSession implements ObservableModel {
    * Should be called before advancing to ensure news is ready when the week advances.
    */
   public void generateNewsForNextWeek() {
-    int nextWeek = getCurrentWeek() + 1;
-    int newsCount = 2 + (int) (Math.random() * 4);
-    for (int i = 0; i < newsCount; i++) {
-      news.add(newsGenerator.generateNews(nextWeek));
-    }
+    addGeneratedNewsForWeek(getCurrentWeek() + 1);
   }
 
   /**
@@ -372,24 +427,7 @@ public class GameSession implements ObservableModel {
     if (week < 1) {
       throw new IllegalArgumentException("Week must be at least 1");
     }
-    return news.stream()
-        .filter(n -> n.getWeek() == week)
-        .collect(Collectors.toList());
-  }
-
-  /**
-   * Returns news articles with a specific sentiment.
-   *
-   * @param sentiment the sentiment type
-   * @return news articles with the sentiment
-   */
-  public List<News> getNewsBySentiment(News.Sentiment sentiment) {
-    if (sentiment == null) {
-      throw new IllegalArgumentException("Sentiment cannot be null");
-    }
-    return news.stream()
-        .filter(n -> n.getSentiment() == sentiment)
-        .collect(Collectors.toList());
+    return news.stream().filter(n -> n.getWeek() == week).toList();
   }
 
   /**
@@ -451,9 +489,7 @@ public class GameSession implements ObservableModel {
    * @return true if buy is valid
    */
   public boolean canBuy(String symbol, BigDecimal quantity) {
-    if (symbol == null || symbol.isBlank()
-        || quantity == null
-        || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+    if (isInvalidTradeInput(symbol, quantity)) {
       return false;
     }
 
@@ -488,9 +524,7 @@ public class GameSession implements ObservableModel {
    * @return true if sell is valid
    */
   public boolean canSell(String symbol, BigDecimal quantity) {
-    if (symbol == null || symbol.isBlank()
-        || quantity == null
-        || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+    if (isInvalidTradeInput(symbol, quantity)) {
       return false;
     }
     BigDecimal totalOwnedQuantity = player.getPortfolio().getShares(symbol.toUpperCase()).stream()
@@ -557,5 +591,37 @@ public class GameSession implements ObservableModel {
       remaining = remaining.subtract(consumedQuantity);
     }
     return totalCost.divide(targetQuantity, 6, java.math.RoundingMode.HALF_UP);
+  }
+
+  private static void adjustCashBalance(Player player, BigDecimal targetBalance) {
+    BigDecimal currentBalance = player.getMoney();
+    int comparison = targetBalance.compareTo(currentBalance);
+    if (comparison > 0) {
+      player.addMoney(targetBalance.subtract(currentBalance));
+      return;
+    }
+    if (comparison < 0) {
+      player.withdrawMoney(currentBalance.subtract(targetBalance));
+    }
+  }
+
+  private void addGeneratedNewsForWeek(int week) {
+    int newsCount = 2 + (int) (Math.random() * 4);
+    news.addAll(newsGenerator.generateNewsForWeek(week, newsCount));
+  }
+
+  private void validateTradeInput(String symbol, BigDecimal quantity) {
+    if (symbol == null || symbol.isBlank()) {
+      throw new IllegalArgumentException("Symbol cannot be null or blank");
+    }
+    if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("Quantity must be greater than zero");
+    }
+  }
+
+  private boolean isInvalidTradeInput(String symbol, BigDecimal quantity) {
+    return symbol == null || symbol.isBlank()
+        || quantity == null
+        || quantity.compareTo(BigDecimal.ZERO) <= 0;
   }
 }

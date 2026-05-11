@@ -1,5 +1,6 @@
 package edu.ntnu.idi.bidata.group5.ui.controller;
 
+import edu.ntnu.idi.bidata.group5.file.GameStateFileHandler;
 import edu.ntnu.idi.bidata.group5.file.StockFileHandler;
 import edu.ntnu.idi.bidata.group5.model.GameSession;
 import edu.ntnu.idi.bidata.group5.model.Stock;
@@ -18,12 +19,14 @@ import java.util.List;
 public class StartController {
 
   private final StockFileHandler stockFileHandler;
+  private final GameStateFileHandler gameStateFileHandler;
 
   /**
    * Constructor for the StartController, initializes the StockFileHandler.
    */
   public StartController() {
     this.stockFileHandler = new StockFileHandler();
+    this.gameStateFileHandler = new GameStateFileHandler();
   }
 
   /**
@@ -64,6 +67,58 @@ public class StartController {
       return new GameSession(playerName, startingCapital, stocks);
     } catch (IOException e) {
       throw new IllegalStateException("Failed to load sample stock data", e);
+    }
+  }
+
+  /**
+   * Starts a game session from either a selected stock file or bundled sample data.
+   *
+   * @param playerName player name
+   * @param startingCapital initial capital
+   * @param stockFilePath optional stock CSV path, null for sample data
+   * @return initialized game session
+   */
+  public GameSession startGame(String playerName, BigDecimal startingCapital, Path stockFilePath) {
+    if (stockFilePath != null) {
+      return startNewGame(playerName, startingCapital, stockFilePath);
+    }
+    return startWithSampleData(playerName, startingCapital);
+  }
+
+  /**
+   * Saves an active game session to a JSON file.
+   *
+   * @param session the session to save
+   * @param saveFilePath path to JSON save file
+   */
+  public void saveGame(GameSession session, Path saveFilePath) {
+    if (session == null) {
+      throw new IllegalArgumentException("Session cannot be null");
+    }
+    if (saveFilePath == null) {
+      throw new IllegalArgumentException("Save file path cannot be null");
+    }
+    try {
+      gameStateFileHandler.writeToFile(session, saveFilePath.toString());
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to save game state", e);
+    }
+  }
+
+  /**
+   * Loads a game session from a JSON save file.
+   *
+   * @param saveFilePath path to JSON save file
+   * @return restored game session
+   */
+  public GameSession loadGame(Path saveFilePath) {
+    if (saveFilePath == null) {
+      throw new IllegalArgumentException("Save file path cannot be null");
+    }
+    try {
+      return gameStateFileHandler.readFromFile(saveFilePath.toString());
+    } catch (IOException | IllegalArgumentException e) {
+      throw new IllegalStateException("Failed to load game state", e);
     }
   }
 }

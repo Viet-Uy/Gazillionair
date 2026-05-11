@@ -2,7 +2,10 @@ package edu.ntnu.idi.bidata.group5.ui.controller;
 
 import edu.ntnu.idi.bidata.group5.model.GameSession;
 import edu.ntnu.idi.bidata.group5.model.PlayerStatus;
+import edu.ntnu.idi.bidata.group5.model.Sale;
 import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Controller for the dashboard view,
@@ -12,6 +15,7 @@ import java.math.BigDecimal;
 public class DashboardController {
 
   private final GameSession session;
+  private final StartController startController;
 
   /**
    * Constructor for the DashboardController, initializes the GameSession.
@@ -24,6 +28,7 @@ public class DashboardController {
       throw new IllegalArgumentException("Session cannot be null");
     }
     this.session = session;
+    this.startController = new StartController();
   }
 
   /**
@@ -32,6 +37,24 @@ public class DashboardController {
    */
   public void nextWeek() {
     session.nextWeek();
+  }
+
+  /**
+   * Sells all holdings for the current session.
+   *
+   * @return list of sale transactions
+   */
+  public List<Sale> sellAllHoldings() {
+    return session.sellAllHoldings();
+  }
+
+  /**
+   * Saves the current session to the given path.
+   *
+   * @param saveFilePath destination file path
+   */
+  public void saveGame(Path saveFilePath) {
+    startController.saveGame(session, saveFilePath);
   }
 
   /**
