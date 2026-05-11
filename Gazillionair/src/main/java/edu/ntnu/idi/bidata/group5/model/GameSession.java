@@ -169,6 +169,16 @@ public class GameSession implements ObservableModel {
   }
 
   /**
+   * Returns whether the player is bankrupt.
+   * A player is bankrupt when there is no cash balance and no remaining holdings.
+   *
+   * @return true when bankrupt
+   */
+  public boolean isBankrupt() {
+    return getCashBalance().compareTo(BigDecimal.ZERO) <= 0 && !hasHoldings();
+  }
+
+  /**
    * Returns player's current status.
    *
    * @return player status
