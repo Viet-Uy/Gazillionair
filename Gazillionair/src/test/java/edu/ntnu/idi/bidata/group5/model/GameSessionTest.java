@@ -151,6 +151,22 @@ class GameSessionTest {
   }
 
   @Test
+  void isBankruptWhenNoCashAndNoHoldings() {
+    GameSession session = new GameSession("Uy", BigDecimal.ZERO, stocks);
+
+    assertTrue(session.isBankrupt());
+  }
+
+  @Test
+  void isNotBankruptWhenNoCashButStillHasHoldings() {
+    GameSession session = new GameSession("Uy", new BigDecimal("100.50"), stocks);
+    session.buy("AAPL", 1);
+
+    assertEquals(0, session.getCashBalance().compareTo(BigDecimal.ZERO));
+    assertFalse(session.isBankrupt());
+  }
+
+  @Test
   void stockDetailsAndPriceHistoryWork() {
     GameSession session = new GameSession("Uy", new BigDecimal("1000"), stocks);
     assertNotNull(session.getStock("AAPL"));
