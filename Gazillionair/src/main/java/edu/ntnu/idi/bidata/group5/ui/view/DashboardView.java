@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -62,6 +63,7 @@ public class DashboardView implements ModelObserver {
   private PortfolioView portfolioView;
   private TransactionsView transactionsView;
   private StatsView statsView;
+  private boolean gameEnded;
 
   /**
    * Constructs a DashboardView with empty placeholder layout.
@@ -106,6 +108,7 @@ public class DashboardView implements ModelObserver {
       centerContent.getChildren().addAll(statsSection, tabPane);
       VBox.setVgrow(tabPane, Priority.ALWAYS);
       root.setCenter(centerContent);
+      checkBankruptcyAndEndGame();
     } else {
       Label placeholder = new Label("Dashboard Loading...");
       placeholder.setTextFill(Color.web("#cbd5e1"));
@@ -382,6 +385,7 @@ public class DashboardView implements ModelObserver {
       session.nextWeek();
       BigDecimal after = session.getNetWorth();
       setWeeklyChange(after.subtract(before));
+      checkBankruptcyAndEndGame();
     }
   }
 
@@ -426,6 +430,25 @@ public class DashboardView implements ModelObserver {
       if (statsView != null) {
         statsView.refresh();
       }
+      checkBankruptcyAndEndGame();
+    }
+  }
+
+  private void checkBankruptcyAndEndGame() {
+    if (gameEnded || session == null || !session.isBankrupt()) {
+      return;
+    }
+    gameEnded = true;
+    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    if (stage != null) {
+      alert.initOwner(stage);
+    }
+    alert.setTitle("Game Over");
+    alert.setHeaderText("Bankruptcy");
+    alert.setContentText("You have no cash and no holdings left. The game has ended.");
+    alert.showAndWait();
+    if (stage != null) {
+      stage.close();
     }
   }
 
