@@ -11,7 +11,7 @@ import java.util.Random;
  */
 public class NewsGenerator {
 
-  private static final Random random = new Random();
+  private static final Random RANDOM = new Random();
 
   private static final String[] POSITIVE_HEADLINES = {
       "Strong Earnings Beat Market Expectations",
@@ -136,7 +136,7 @@ public class NewsGenerator {
   }
 
   private Sentiment getRandomSentiment() {
-    int rand = random.nextInt(100);
+    int rand = RANDOM.nextInt(100);
     if (rand < 30) {
       return Sentiment.POSITIVE;
     } else if (rand < 60) {
@@ -147,28 +147,26 @@ public class NewsGenerator {
   }
 
   private String getHeadlineForSentiment(Sentiment sentiment) {
-    switch (sentiment) {
-      case POSITIVE:
-        return POSITIVE_HEADLINES[random.nextInt(POSITIVE_HEADLINES.length)];
-      case NEGATIVE:
-        return NEGATIVE_HEADLINES[random.nextInt(NEGATIVE_HEADLINES.length)];
-      default:
-        return NEUTRAL_HEADLINES[random.nextInt(NEUTRAL_HEADLINES.length)];
-    }
+    return switch (sentiment) {
+      case POSITIVE -> pickRandom(POSITIVE_HEADLINES);
+      case NEGATIVE -> pickRandom(NEGATIVE_HEADLINES);
+      case NEUTRAL -> pickRandom(NEUTRAL_HEADLINES);
+    };
   }
 
   private String getContentForSentiment(Sentiment sentiment) {
-    switch (sentiment) {
-      case POSITIVE:
-        return POSITIVE_CONTENT[random.nextInt(POSITIVE_CONTENT.length)];
-      case NEGATIVE:
-        return NEGATIVE_CONTENT[random.nextInt(NEGATIVE_CONTENT.length)];
-      default:
-        return NEUTRAL_CONTENT[random.nextInt(NEUTRAL_CONTENT.length)];
-    }
+    return switch (sentiment) {
+      case POSITIVE -> pickRandom(POSITIVE_CONTENT);
+      case NEGATIVE -> pickRandom(NEGATIVE_CONTENT);
+      case NEUTRAL -> pickRandom(NEUTRAL_CONTENT);
+    };
   }
 
   private String getRandomStocks() {
-    return STOCK_GROUPS[random.nextInt(STOCK_GROUPS.length)];
+    return pickRandom(STOCK_GROUPS);
+  }
+
+  private String pickRandom(String[] entries) {
+    return entries[RANDOM.nextInt(entries.length)];
   }
 }

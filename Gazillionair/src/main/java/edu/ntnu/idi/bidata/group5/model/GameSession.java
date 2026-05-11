@@ -9,7 +9,6 @@ import edu.ntnu.idi.bidata.group5.service.TransactionFactory;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Aggregates runtime game state and exposes use-case style operations for the UI layer.
@@ -332,12 +331,7 @@ public class GameSession implements ObservableModel {
    * @return committed purchase
    */
   public Purchase buy(String symbol, BigDecimal quantity) {
-    if (symbol == null || symbol.isBlank()) {
-      throw new IllegalArgumentException("Symbol cannot be null or blank");
-    }
-    if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("Quantity must be greater than zero");
-    }
+    validateTradeInput(symbol, quantity);
 
     Stock stock = exchange.getStock(symbol);
     Share share = new Share(stock, quantity, stock.getSalesPrice());
@@ -366,15 +360,9 @@ public class GameSession implements ObservableModel {
    * @return committed sale
    */
   public Sale sell(String symbol, BigDecimal quantity) {
-    if (symbol == null || symbol.isBlank()) {
-      throw new IllegalArgumentException("Symbol cannot be null or blank");
-    }
-    if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("Quantity must be greater than zero");
-    }
+    validateTradeInput(symbol, quantity);
 
     Stock stock = exchange.getStock(symbol);
-    BigDecimal targetQuantity = quantity;
     List<Share> ownedShares = player.getPortfolio().getShares(symbol.toUpperCase());
     if (ownedShares.isEmpty()) {
       throw new IllegalStateException("No owned share has enough quantity to sell");
@@ -382,12 +370,12 @@ public class GameSession implements ObservableModel {
     BigDecimal totalOwnedQuantity = ownedShares.stream()
         .map(Share::getQuantity)
         .reduce(BigDecimal.ZERO, BigDecimal::add);
-    if (totalOwnedQuantity.compareTo(targetQuantity) < 0) {
+    if (totalOwnedQuantity.compareTo(quantity) < 0) {
       throw new IllegalStateException("No owned share has enough quantity to sell");
     }
 
-    BigDecimal weightedPurchasePrice = calculateWeightedPurchasePrice(ownedShares, targetQuantity);
-    Share shareToSell = new Share(stock, targetQuantity, weightedPurchasePrice);
+    BigDecimal weightedPurchasePrice = calculateWeightedPurchasePrice(ownedShares, quantity);
+    Share shareToSell = new Share(stock, quantity, weightedPurchasePrice);
     Sale sale = transactionFactory.createSale(shareToSell, getCurrentWeek());
     sale.commit(player);
     publishModelChanged();
@@ -399,10 +387,7 @@ public class GameSession implements ObservableModel {
    * Called automatically when advancing to the next week.
    */
   public void generateNewsForCurrentWeek() {
-    int newsCount = 2 + (int) (Math.random() * 4);
-    for (int i = 0; i < newsCount; i++) {
-      news.add(newsGenerator.generateNews(getCurrentWeek()));
-    }
+    addGeneratedNewsForWeek(getCurrentWeek());
   }
 
   /**
@@ -410,11 +395,7 @@ public class GameSession implements ObservableModel {
    * Should be called before advancing to ensure news is ready when the week advances.
    */
   public void generateNewsForNextWeek() {
-    int nextWeek = getCurrentWeek() + 1;
-    int newsCount = 2 + (int) (Math.random() * 4);
-    for (int i = 0; i < newsCount; i++) {
-      news.add(newsGenerator.generateNews(nextWeek));
-    }
+    addGeneratedNewsForWeek(getCurrentWeek() + 1);
   }
 
   /**
@@ -436,24 +417,7 @@ public class GameSession implements ObservableModel {
     if (week < 1) {
       throw new IllegalArgumentException("Week must be at least 1");
     }
-    return news.stream()
-        .filter(n -> n.getWeek() == week)
-        .collect(Collectors.toList());
-  }
-
-  /**
-   * Returns news articles with a specific sentiment.
-   *
-   * @param sentiment the sentiment type
-   * @return news articles with the sentiment
-   */
-  public List<News> getNewsBySentiment(News.Sentiment sentiment) {
-    if (sentiment == null) {
-      throw new IllegalArgumentException("Sentiment cannot be null");
-    }
-    return news.stream()
-        .filter(n -> n.getSentiment() == sentiment)
-        .collect(Collectors.toList());
+    return news.stream().filter(n -> n.getWeek() == week).toList();
   }
 
   /**
@@ -515,9 +479,7 @@ public class GameSession implements ObservableModel {
    * @return true if buy is valid
    */
   public boolean canBuy(String symbol, BigDecimal quantity) {
-    if (symbol == null || symbol.isBlank()
-        || quantity == null
-        || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+    if (isInvalidTradeInput(symbol, quantity)) {
       return false;
     }
 
@@ -552,9 +514,7 @@ public class GameSession implements ObservableModel {
    * @return true if sell is valid
    */
   public boolean canSell(String symbol, BigDecimal quantity) {
-    if (symbol == null || symbol.isBlank()
-        || quantity == null
-        || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+    if (isInvalidTradeInput(symbol, quantity)) {
       return false;
     }
     BigDecimal totalOwnedQuantity = player.getPortfolio().getShares(symbol.toUpperCase()).stream()
@@ -633,5 +593,25 @@ public class GameSession implements ObservableModel {
     if (comparison < 0) {
       player.withdrawMoney(currentBalance.subtract(targetBalance));
     }
+  }
+
+  private void addGeneratedNewsForWeek(int week) {
+    int newsCount = 2 + (int) (Math.random() * 4);
+    news.addAll(newsGenerator.generateNewsForWeek(week, newsCount));
+  }
+
+  private void validateTradeInput(String symbol, BigDecimal quantity) {
+    if (symbol == null || symbol.isBlank()) {
+      throw new IllegalArgumentException("Symbol cannot be null or blank");
+    }
+    if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("Quantity must be greater than zero");
+    }
+  }
+
+  private boolean isInvalidTradeInput(String symbol, BigDecimal quantity) {
+    return symbol == null || symbol.isBlank()
+        || quantity == null
+        || quantity.compareTo(BigDecimal.ZERO) <= 0;
   }
 }
