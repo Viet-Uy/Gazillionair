@@ -49,6 +49,6 @@ public class DashboardController {
    * @return get status
    */
   public PlayerStatus getStatus() {
-    return session.getPlayerStatus();
+    return session.getPlayer().getStatus();
   }
 }
