@@ -3,18 +3,19 @@ package edu.ntnu.idi.bidata.group5.ui.view;
 import edu.ntnu.idi.bidata.group5.model.GameSession;
 import edu.ntnu.idi.bidata.group5.model.PlayerStatus;
 import edu.ntnu.idi.bidata.group5.model.observer.ModelObserver;
+import edu.ntnu.idi.bidata.group5.ui.controller.DashboardController;
 import edu.ntnu.idi.bidata.group5.ui.controller.MarketController;
 import edu.ntnu.idi.bidata.group5.ui.controller.NewsController;
 import edu.ntnu.idi.bidata.group5.ui.controller.PortfolioController;
-import edu.ntnu.idi.bidata.group5.ui.controller.StartController;
 import edu.ntnu.idi.bidata.group5.ui.controller.StatsController;
 import edu.ntnu.idi.bidata.group5.ui.controller.TransactionsController;
+import edu.ntnu.idi.bidata.group5.ui.view.components.AppDialog;
+import edu.ntnu.idi.bidata.group5.ui.view.components.GameFileChooser;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -30,7 +31,6 @@ import javafx.scene.paint.Stop;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 /**
@@ -43,7 +43,7 @@ public class DashboardView implements ModelObserver {
   private final BorderPane root;
   private final GameSession session;
   private final Stage stage;
-  private final StartController startController;
+  private final DashboardController dashboardController;
 
   private Label netWorthLabel;
   private Label cashLabel;
@@ -84,7 +84,7 @@ public class DashboardView implements ModelObserver {
   public DashboardView(GameSession session, Stage stage) {
     this.session = session;
     this.stage = stage;
-    this.startController = new StartController();
+    this.dashboardController = session == null ? null : new DashboardController(session);
     this.root = new BorderPane();
     initializeUi();
     if (session != null) {
@@ -395,7 +395,7 @@ public class DashboardView implements ModelObserver {
   private void onNextWeek() {
     if (session != null) {
       BigDecimal before = session.getNetWorth();
-      session.nextWeek();
+      dashboardController.nextWeek();
       BigDecimal after = session.getNetWorth();
       setWeeklyChange(after.subtract(before));
     }
@@ -403,7 +403,7 @@ public class DashboardView implements ModelObserver {
 
   private void onSellAllAndExit() {
     if (session != null) {
-      session.sellAllHoldings();
+      dashboardController.sellAllHoldings();
     }
     if (stage != null) {
       stage.close();
@@ -414,38 +414,18 @@ public class DashboardView implements ModelObserver {
     if (session == null) {
       return;
     }
-    FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Save Game");
-    fileChooser.setInitialFileName("gazillionair-save.json");
-    fileChooser.getExtensionFilters().add(
-        new FileChooser.ExtensionFilter("JSON Files", "*.json")
-    );
-    File file = fileChooser.showSaveDialog(stage);
+    File file = GameFileChooser.chooseSaveGameJson(stage);
     if (file == null) {
       return;
     }
     try {
-      startController.saveGame(session, file.toPath());
-      Alert alert = new Alert(Alert.AlertType.INFORMATION);
-      if (stage != null) {
-        alert.initOwner(stage);
-      }
-      alert.setTitle("Game Saved");
-      alert.setHeaderText(null);
-      alert.setContentText("Game state saved successfully.");
-      alert.showAndWait();
+      dashboardController.saveGame(file.toPath());
+      AppDialog.showInfo(stage, "Game Saved", "Game state saved successfully.");
       if (stage != null) {
         stage.close();
       }
-    } catch (RuntimeException e) {
-      Alert alert = new Alert(Alert.AlertType.ERROR);
-      if (stage != null) {
-        alert.initOwner(stage);
-      }
-      alert.setTitle("Save Failed");
-      alert.setHeaderText(null);
-      alert.setContentText("Failed to save game: " + e.getMessage());
-      alert.showAndWait();
+    } catch (IllegalStateException e) {
+      AppDialog.showError(stage, "Save Failed", "Failed to save game: " + e.getMessage());
     }
   }
 

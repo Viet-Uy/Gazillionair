@@ -2,13 +2,13 @@ package edu.ntnu.idi.bidata.group5.ui.view;
 
 import edu.ntnu.idi.bidata.group5.model.GameSession;
 import edu.ntnu.idi.bidata.group5.ui.controller.StartController;
+import edu.ntnu.idi.bidata.group5.ui.navigation.SceneNavigator;
+import edu.ntnu.idi.bidata.group5.ui.view.components.AppDialog;
+import edu.ntnu.idi.bidata.group5.ui.view.components.GameFileChooser;
 import java.io.File;
 import java.math.BigDecimal;
-import java.util.Objects;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
@@ -23,7 +23,6 @@ import javafx.scene.paint.Stop;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 /**
@@ -42,8 +41,6 @@ public class StartView {
   private File selectedStockFile;
   private Label fileStatusLabel;
 
-  private static final int WINDOW_WIDTH = 900;
-  private static final int WINDOW_HEIGHT = 600;
   private static final int DEFAULT_CAPITAL = 100000;
   private static final int MIN_CAPITAL = 1000;
   private static final int CAPITAL_STEP = 1000;
@@ -343,12 +340,7 @@ public class StartView {
    * Updates fileStatusLabel on successful selection.
    */
   private void selectStockFile() {
-    FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Select Stock CSV File");
-    fileChooser.getExtensionFilters().add(
-        new FileChooser.ExtensionFilter("CSV Files", "*.csv")
-    );
-    File file = fileChooser.showOpenDialog(stage);
+    File file = GameFileChooser.chooseStockCsv(stage);
     if (file != null) {
       selectedStockFile = file;
       fileStatusLabel.setText(file.getName() + " loaded ✓");
@@ -370,45 +362,25 @@ public class StartView {
     BigDecimal capital = BigDecimal.valueOf(capitalSpinner.getValue());
 
     try {
-      GameSession session;
-      if (selectedStockFile != null) {
-        session = controller.startNewGame(playerName, capital, selectedStockFile.toPath());
-      } else {
-        session = controller.startWithSampleData(playerName, capital);
-      }
-      openDashboard(session);
-    } catch (Exception e) {
+      GameSession session = controller.startGame(
+          playerName, capital, selectedStockFile == null ? null : selectedStockFile.toPath());
+      SceneNavigator.openDashboard(stage, session);
+    } catch (IllegalStateException e) {
       showError("Failed to start game: " + e.getMessage());
     }
   }
 
   private void onLoadGame() {
-    FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Load Saved Game");
-    fileChooser.getExtensionFilters().add(
-        new FileChooser.ExtensionFilter("JSON Files", "*.json")
-    );
-    File file = fileChooser.showOpenDialog(stage);
+    File file = GameFileChooser.chooseLoadSaveJson(stage);
     if (file == null) {
       return;
     }
     try {
       GameSession session = controller.loadGame(file.toPath());
-      openDashboard(session);
-    } catch (Exception e) {
+      SceneNavigator.openDashboard(stage, session);
+    } catch (IllegalStateException e) {
       showError("Failed to load game: " + e.getMessage());
     }
-  }
-
-  private void openDashboard(GameSession session) {
-    DashboardView dashboardView = new DashboardView(session, stage);
-    Scene scene = new Scene(dashboardView.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
-    String cssResource = Objects.requireNonNull(
-        getClass().getResource("/styles/app.css"),
-        "CSS file not found: /styles/app.css"
-    ).toExternalForm();
-    scene.getStylesheets().add(cssResource);
-    stage.setScene(scene);
   }
 
   /**
@@ -417,11 +389,7 @@ public class StartView {
    * @param message the error message to display
    */
   private void showError(String message) {
-    Alert alert = new Alert(Alert.AlertType.ERROR);
-    alert.setTitle("Error");
-    alert.setHeaderText(null);
-    alert.setContentText(message);
-    alert.showAndWait();
+    AppDialog.showError(stage, "Error", message);
   }
 
   /**

@@ -162,7 +162,7 @@ public class MarketController {
               + purchase.getShare().getQuantity().stripTrailingZeros().toPlainString()
               + " "
               + stock.getSymbol());
-    } catch (RuntimeException exception) {
+    } catch (IllegalArgumentException | IllegalStateException exception) {
       view.showTradeError(exception.getMessage());
     }
   }
@@ -171,7 +171,7 @@ public class MarketController {
     try {
       Sale sale = sell(stock.getSymbol(), quantity);
       view.showTradeSuccess(formatSaleMessage(sale, stock.getSymbol()));
-    } catch (RuntimeException exception) {
+    } catch (IllegalArgumentException | IllegalStateException exception) {
       view.showTradeError(exception.getMessage());
     }
   }
@@ -185,7 +185,7 @@ public class MarketController {
               + " "
               + stock.getSymbol()
               + " (max)");
-    } catch (RuntimeException exception) {
+    } catch (IllegalArgumentException | IllegalStateException exception) {
       view.showTradeError(exception.getMessage());
     }
   }

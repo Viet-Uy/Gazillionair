@@ -71,6 +71,21 @@ public class StartController {
   }
 
   /**
+   * Starts a game session from either a selected stock file or bundled sample data.
+   *
+   * @param playerName player name
+   * @param startingCapital initial capital
+   * @param stockFilePath optional stock CSV path, null for sample data
+   * @return initialized game session
+   */
+  public GameSession startGame(String playerName, BigDecimal startingCapital, Path stockFilePath) {
+    if (stockFilePath != null) {
+      return startNewGame(playerName, startingCapital, stockFilePath);
+    }
+    return startWithSampleData(playerName, startingCapital);
+  }
+
+  /**
    * Saves an active game session to a JSON file.
    *
    * @param session the session to save

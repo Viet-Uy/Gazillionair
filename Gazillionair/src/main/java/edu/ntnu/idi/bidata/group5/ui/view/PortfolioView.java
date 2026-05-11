@@ -219,7 +219,7 @@ public class PortfolioView {
       Sale sale = controller.sell(symbol, quantity);
       setSaleFeedback(sale, "Sold ", symbol);
       refresh();
-    } catch (RuntimeException exception) {
+    } catch (IllegalArgumentException | IllegalStateException exception) {
       feedbackLabel.setStyle("-fx-text-fill: #ef4444;");
       feedbackLabel.setText(exception.getMessage());
     }
@@ -236,7 +236,7 @@ public class PortfolioView {
       Sale sale = controller.sellAllForSymbol(symbol);
       setSaleFeedback(sale, "Sold all ", symbol);
       refresh();
-    } catch (RuntimeException exception) {
+    } catch (IllegalArgumentException | IllegalStateException exception) {
       feedbackLabel.setStyle("-fx-text-fill: #ef4444;");
       feedbackLabel.setText(exception.getMessage());
     }
