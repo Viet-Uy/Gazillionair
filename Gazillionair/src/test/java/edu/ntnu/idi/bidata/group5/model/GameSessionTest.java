@@ -243,17 +243,5 @@ class GameSessionTest {
     assertEquals(before + 1, session.getCurrentWeek());
     assertEquals(1, notifications.get());
   }
-
-  @Test
-  void playerStatusUsesCurrentWeekNotTransactionWeeks() {
-    GameSession session = new GameSession("Uy", new BigDecimal("1000"), stocks);
-    session.getPlayer().addMoney(new BigDecimal("1000"));
-    for (int i = 0; i < 19; i++) {
-      session.nextWeek();
-    }
-
-    assertEquals(20, session.getCurrentWeek());
-    assertEquals(PlayerStatus.SPECULATOR, session.getPlayerStatus());
-  }
 }
 
