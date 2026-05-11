@@ -6,12 +6,15 @@ import edu.ntnu.idi.bidata.group5.model.observer.ModelObserver;
 import edu.ntnu.idi.bidata.group5.ui.controller.MarketController;
 import edu.ntnu.idi.bidata.group5.ui.controller.NewsController;
 import edu.ntnu.idi.bidata.group5.ui.controller.PortfolioController;
+import edu.ntnu.idi.bidata.group5.ui.controller.StartController;
 import edu.ntnu.idi.bidata.group5.ui.controller.StatsController;
 import edu.ntnu.idi.bidata.group5.ui.controller.TransactionsController;
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -27,6 +30,7 @@ import javafx.scene.paint.Stop;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 /**
@@ -39,6 +43,7 @@ public class DashboardView implements ModelObserver {
   private final BorderPane root;
   private final GameSession session;
   private final Stage stage;
+  private final StartController startController;
 
   private Label netWorthLabel;
   private Label cashLabel;
@@ -79,6 +84,7 @@ public class DashboardView implements ModelObserver {
   public DashboardView(GameSession session, Stage stage) {
     this.session = session;
     this.stage = stage;
+    this.startController = new StartController();
     this.root = new BorderPane();
     initializeUi();
     if (session != null) {
@@ -170,6 +176,16 @@ public class DashboardView implements ModelObserver {
             + "-fx-cursor: hand;");
     nextWeekBtn.setOnAction(e -> onNextWeek());
 
+    Button saveAndExitBtn = new Button("Save & Exit");
+    saveAndExitBtn.setStyle(
+        "-fx-background-color: #3b82f6; "
+            + "-fx-text-fill: white; "
+            + "-fx-padding: 8px 16px; "
+            + "-fx-background-radius: 8; "
+            + "-fx-font-size: 14; "
+            + "-fx-cursor: hand;");
+    saveAndExitBtn.setOnAction(e -> onSaveAndExit());
+
     Button sellAllExitBtn = new Button("Sell All & Exit");
     sellAllExitBtn.setStyle(
         "-fx-background-color: #ef4444; "
@@ -180,7 +196,7 @@ public class DashboardView implements ModelObserver {
             + "-fx-cursor: hand;");
     sellAllExitBtn.setOnAction(e -> onSellAllAndExit());
 
-    actionButtons.getChildren().addAll(nextWeekBtn, sellAllExitBtn);
+    actionButtons.getChildren().addAll(nextWeekBtn, saveAndExitBtn, sellAllExitBtn);
     HBox.setHgrow(playerInfo, Priority.ALWAYS);
 
     headerContent.getChildren().addAll(playerInfo, actionButtons);
@@ -391,6 +407,45 @@ public class DashboardView implements ModelObserver {
     }
     if (stage != null) {
       stage.close();
+    }
+  }
+
+  private void onSaveAndExit() {
+    if (session == null) {
+      return;
+    }
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Save Game");
+    fileChooser.setInitialFileName("gazillionair-save.json");
+    fileChooser.getExtensionFilters().add(
+        new FileChooser.ExtensionFilter("JSON Files", "*.json")
+    );
+    File file = fileChooser.showSaveDialog(stage);
+    if (file == null) {
+      return;
+    }
+    try {
+      startController.saveGame(session, file.toPath());
+      Alert alert = new Alert(Alert.AlertType.INFORMATION);
+      if (stage != null) {
+        alert.initOwner(stage);
+      }
+      alert.setTitle("Game Saved");
+      alert.setHeaderText(null);
+      alert.setContentText("Game state saved successfully.");
+      alert.showAndWait();
+      if (stage != null) {
+        stage.close();
+      }
+    } catch (RuntimeException e) {
+      Alert alert = new Alert(Alert.AlertType.ERROR);
+      if (stage != null) {
+        alert.initOwner(stage);
+      }
+      alert.setTitle("Save Failed");
+      alert.setHeaderText(null);
+      alert.setContentText("Failed to save game: " + e.getMessage());
+      alert.showAndWait();
     }
   }
 
