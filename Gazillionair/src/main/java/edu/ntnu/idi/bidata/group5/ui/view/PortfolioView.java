@@ -3,6 +3,7 @@ package edu.ntnu.idi.bidata.group5.ui.view;
 import edu.ntnu.idi.bidata.group5.model.Sale;
 import edu.ntnu.idi.bidata.group5.model.Share;
 import edu.ntnu.idi.bidata.group5.ui.controller.PortfolioController;
+import edu.ntnu.idi.bidata.group5.ui.view.components.PriceChartComponent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -30,8 +31,10 @@ public class PortfolioView {
   private final Button sellButton;
   private final Label feedbackLabel;
   private final PortfolioController controller;
+  private final VBox chartPanel;
   private List<Share> currentHoldings;
   private Share selectedHolding;
+  private PriceChartComponent currentChart;
 
   /**
    * Creates a portfolio view.
@@ -52,6 +55,7 @@ public class PortfolioView {
     this.sellAllSelectedButton = new Button("Sell All Selected");
     this.sellButton = new Button("Sell");
     this.feedbackLabel = new Label();
+    this.chartPanel = new VBox(8);
     this.currentHoldings = List.of();
     initialize();
   }
@@ -129,6 +133,15 @@ public class PortfolioView {
             + "-fx-background-radius: 8; "
             + "-fx-padding: 12;");
 
+    chartPanel.setPrefHeight(250);
+    chartPanel.setStyle("-fx-border-color: #334155; "
+        + "-fx-border-width: 1; "
+        + "-fx-background-radius: 8; "
+        + "-fx-border-radius: 8;");
+
+    VBox rightPanel = new VBox(12, chartPanel, actionPanel);
+    VBox.setVgrow(actionPanel, Priority.ALWAYS);
+
     sellAllButton.setOnAction(
         ignored -> {
           List<Sale> sales = controller.sellAll();
@@ -158,7 +171,7 @@ public class PortfolioView {
     sellAllSelectedButton.setOnAction(ignored -> onSellAllSelectedClicked());
     sellButton.setOnAction(ignored -> onSellClicked());
 
-    root.getChildren().addAll(listPanel, actionPanel);
+    root.getChildren().addAll(listPanel, rightPanel);
     refresh();
   }
 
@@ -186,6 +199,7 @@ public class PortfolioView {
     if (selectedIndex < 0 || selectedIndex >= currentHoldings.size()) {
       selectedHolding = null;
       selectedHoldingLabel.setText("Select a holding");
+      chartPanel.getChildren().clear();
       return;
     }
     selectedHolding = currentHoldings.get(selectedIndex);
@@ -193,6 +207,19 @@ public class PortfolioView {
         selectedHolding.getStock().getSymbol()
             + " owned: "
             + selectedHolding.getQuantity().stripTrailingZeros().toPlainString());
+    displayPriceChart(selectedHolding.getStock());
+  }
+
+  /**
+   * Displays the price chart for a stock.
+   *
+   * @param stock the stock to display
+   */
+  private void displayPriceChart(edu.ntnu.idi.bidata.group5.model.Stock stock) {
+    chartPanel.getChildren().clear();
+    currentChart = new PriceChartComponent(stock);
+    chartPanel.getChildren().add(currentChart.getRoot());
+    VBox.setVgrow(currentChart.getRoot(), Priority.ALWAYS);
   }
 
   private void onSellClicked() {
