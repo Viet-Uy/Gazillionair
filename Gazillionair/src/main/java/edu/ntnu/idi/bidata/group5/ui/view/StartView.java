@@ -359,6 +359,11 @@ public class StartView {
       return;
     }
 
+    if (fileStatusLabel.getText().equals("Click to upload CSV file")) {
+      showError("Please select stock data before starting the game.");
+      return;
+    }
+
     BigDecimal capital = BigDecimal.valueOf(capitalSpinner.getValue());
 
     try {
