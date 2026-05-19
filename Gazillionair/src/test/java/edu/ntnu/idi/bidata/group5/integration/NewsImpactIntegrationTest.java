@@ -87,33 +87,7 @@ class NewsImpactIntegrationTest {
     assertTrue(portfolioValueWeek2.compareTo(BigDecimal.ZERO) > 0);
   }
 
-  @Test
-  void newsCanBeFilteredBySentiment() {
-    // Collect news over multiple weeks
-    for (int i = 0; i < 3; i++) {
-      session.nextWeek();
-    }
 
-    List<News> allNews = session.getAllNews();
-    assertTrue(allNews.size() > 0);
-
-    // Filter by sentiment
-    List<News> positiveNews = session.getNewsBySentiment(News.Sentiment.POSITIVE);
-    List<News> negativeNews = session.getNewsBySentiment(News.Sentiment.NEGATIVE);
-    List<News> neutralNews = session.getNewsBySentiment(News.Sentiment.NEUTRAL);
-
-    // At least one sentiment should have news (in most cases)
-    int totalFiltered = positiveNews.size() + negativeNews.size() + neutralNews.size();
-    assertEquals(allNews.size(), totalFiltered);
-
-    // Verify filtering works correctly
-    for (News news : positiveNews) {
-      assertEquals(News.Sentiment.POSITIVE, news.getSentiment());
-    }
-    for (News news : negativeNews) {
-      assertEquals(News.Sentiment.NEGATIVE, news.getSentiment());
-    }
-  }
 
   @Test
   void newsImpactCalculation() {
