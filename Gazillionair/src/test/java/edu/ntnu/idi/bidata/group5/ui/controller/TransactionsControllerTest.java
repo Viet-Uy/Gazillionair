@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.ntnu.idi.bidata.group5.model.GameSession;
+import edu.ntnu.idi.bidata.group5.model.Transaction;
 import edu.ntnu.idi.bidata.group5.model.Stock;
 import java.math.BigDecimal;
 import java.util.List;
@@ -53,6 +54,31 @@ class TransactionsControllerTest {
   void purchasesAndSalesAreCommitted() {
     assertTrue(controller.getPurchases().stream().allMatch(purchase -> purchase.isCommitted()));
     assertTrue(controller.getSales().stream().allMatch(sale -> sale.isCommitted()));
+  }
+
+  @Test
+  void filterTransactionsSupportsTypeWeekAndSearch() {
+    List<Transaction> purchases = controller.filterTransactions("Purchases", "All Weeks", "");
+    List<Transaction> weekTwo = controller.filterTransactions("All Types", "Week 2", "");
+    List<Transaction> appleSearch = controller.filterTransactions("All Types", "All Weeks", "app");
+
+    assertEquals(1, purchases.size());
+    assertEquals(1, weekTwo.size());
+    assertEquals(2, appleSearch.size());
+  }
+
+  @Test
+  void getWeekFilterOptionsReturnsRecordedWeeks() {
+    assertEquals(List.of("Week 1", "Week 2"), controller.getWeekFilterOptions());
+  }
+
+  @Test
+  void getTransactionDetailsReturnsReadableSummary() {
+    String details = controller.getTransactionDetails(controller.getTransactions().getFirst());
+
+    assertTrue(details.contains("Type: Purchase"));
+    assertTrue(details.contains("Symbol: AAPL"));
+    assertTrue(details.contains("Gross: $100.00"));
   }
 }
 
