@@ -12,6 +12,11 @@ import java.math.BigDecimal;
  */
 public class Player {
 
+  private static final int INVESTOR_MIN_TRADING_WEEKS = 10;
+  private static final int SPECULATOR_MIN_TRADING_WEEKS = 20;
+  private static final BigDecimal INVESTOR_MIN_GROWTH = BigDecimal.valueOf(1.2);
+  private static final BigDecimal SPECULATOR_MIN_GROWTH = BigDecimal.valueOf(2.0);
+
   /** The name of the player. */
   private final String name;
 
@@ -142,20 +147,79 @@ public class Player {
   }
 
   /**
+   * Returns the number of distinct weeks in which the player has completed trades.
+   *
+   * @return the number of trading weeks recorded in the archive
+   */
+  public int getTradingWeeks() {
+    return transactionArchive.countDistinctWeeks();
+  }
+
+  /**
    * Determines the player's status based on weeks with transactions and net worth growth.
    *
    * @return the player's status as a PlayerStatus enum value
    */
   public PlayerStatus getStatus() {
-    BigDecimal netWorth = getNetWorth();
-    int weeksWithTrades = transactionArchive.countDistinctWeeks();
-    BigDecimal growth = netWorth.divide(startingMoney, 2, HALF_UP);
-    if (weeksWithTrades >= 20 && growth.compareTo(BigDecimal.valueOf(2.0)) >= 0) {
+    int tradingWeeks = getTradingWeeks();
+    BigDecimal growth = getGrowthRatio();
+    if (tradingWeeks >= SPECULATOR_MIN_TRADING_WEEKS
+        && growth.compareTo(SPECULATOR_MIN_GROWTH) >= 0) {
       return PlayerStatus.SPECULATOR;
-    } else if (weeksWithTrades >= 10 && growth.compareTo(BigDecimal.valueOf(1.2)) >= 0) {
+    } else if (tradingWeeks >= INVESTOR_MIN_TRADING_WEEKS
+        && growth.compareTo(INVESTOR_MIN_GROWTH) >= 0) {
       return PlayerStatus.INVESTOR;
     } else {
       return PlayerStatus.NOVICE;
     }
+  }
+
+  /**
+   * Returns a short description of the player's progress toward the next status tier.
+   *
+   * @return the status progress description
+   */
+  public String getStatusProgressText() {
+    int tradingWeeks = getTradingWeeks();
+    String growthPercent = String.format("%.2f", getGrowthPercent());
+
+    if (getStatus() == PlayerStatus.SPECULATOR) {
+      return "Status Progress: Top rank reached | Trading Weeks: "
+          + tradingWeeks
+          + " | Growth: +"
+          + growthPercent
+          + "%";
+    }
+
+    if (getStatus() == PlayerStatus.INVESTOR) {
+      return "Status Progress: "
+          + tradingWeeks
+          + "/"
+          + SPECULATOR_MIN_TRADING_WEEKS
+          + " trading weeks for SPECULATOR"
+          + " | Growth: +"
+          + growthPercent
+          + "% / +100.00%";
+    }
+
+    return "Status Progress: "
+        + tradingWeeks
+        + "/"
+        + INVESTOR_MIN_TRADING_WEEKS
+        + " trading weeks for INVESTOR"
+        + " | Growth: +"
+        + growthPercent
+        + "% / +20.00%";
+  }
+
+  private BigDecimal getGrowthRatio() {
+    return getNetWorth().divide(startingMoney, 2, HALF_UP);
+  }
+
+  private BigDecimal getGrowthPercent() {
+    return getNetWorth()
+        .subtract(startingMoney)
+        .divide(startingMoney, 4, HALF_UP)
+        .multiply(BigDecimal.valueOf(100));
   }
 }

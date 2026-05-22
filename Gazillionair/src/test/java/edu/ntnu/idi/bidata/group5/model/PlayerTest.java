@@ -98,6 +98,29 @@ class PlayerTest {
   }
 
   @Test
+  void getTradingWeeksReturnsDistinctTradingWeeks() {
+    Stock stock = new Stock("AAPL", "Apple", new BigDecimal("1"));
+    Share shareOne = new Share(stock, new BigDecimal("1"), stock.getSalesPrice());
+    Share shareTwo = new Share(stock, new BigDecimal("1"), stock.getSalesPrice());
+    Share shareThree = new Share(stock, new BigDecimal("1"), stock.getSalesPrice());
+
+    new Purchase(shareOne, 1).commit(player);
+    new Purchase(shareTwo, 1).commit(player);
+    new Purchase(shareThree, 2).commit(player);
+
+    assertEquals(2, player.getTradingWeeks());
+  }
+
+  @Test
+  void getStatusProgressTextShowsInvestorRequirementsForNovice() {
+    String progressText = player.getStatusProgressText();
+
+    assertEquals(
+        "Status Progress: 0/10 trading weeks for INVESTOR | Growth: +0.00% / +20.00%",
+        progressText);
+  }
+
+  @Test
   void addMoneyWithNullAmount() {
     assertThrows(IllegalArgumentException.class,
         () -> player.addMoney(null));

@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.util.StringConverter;
 
 /**
  * PriceChartComponent displays a stock's price history as a line chart.
@@ -19,6 +20,9 @@ import javafx.scene.text.FontWeight;
  * Provides visual representation of how stock prices have changed.
  */
 public class PriceChartComponent {
+
+  private static final String AXIS_TICK_COLOR = "#cbd5e1";
+  private static final String AXIS_LABEL_COLOR = "#f8fafc";
 
   private final VBox root;
   private final LineChart<Number, Number> chart;
@@ -51,7 +55,7 @@ public class PriceChartComponent {
   private void initializeUi(Stock stock) {
     root.setPadding(new Insets(16));
     root.setStyle(
-        "-fx-background-color: rgba(30, 41, 59, 0.6); "
+        "-fx-background-color: #1e293b; "
             + "-fx-border-color: #334155; "
             + "-fx-border-width: 1; "
             + "-fx-background-radius: 8; "
@@ -79,33 +83,72 @@ public class PriceChartComponent {
    * @return configured LineChart
    */
   private LineChart<Number, Number> createLineChart(Stock stock) {
-    NumberAxis numberAxisX = new NumberAxis();
+    List<BigDecimal> prices = stock.getHistoricalPrices();
+    int maxWeek = Math.max(1, prices.size());
+    int tickUnit = Math.max(1, (int) Math.ceil(maxWeek / 10.0));
+
+    NumberAxis numberAxisX = new NumberAxis(1, maxWeek, tickUnit);
     numberAxisX.setLabel("Week");
-    numberAxisX.setStyle("-fx-tick-label-fill: #cbd5e1;");
+    numberAxisX.setStyle("-fx-tick-label-fill: " + AXIS_TICK_COLOR + ";");
+    numberAxisX.setMinorTickVisible(false);
+    numberAxisX.setMinorTickCount(0);
+    numberAxisX.setTickLabelFormatter(new StringConverter<>() {
+      @Override
+      public String toString(Number value) {
+        return String.valueOf(value.intValue());
+      }
+
+      @Override
+      public Number fromString(String value) {
+        return Integer.parseInt(value);
+      }
+    });
 
     NumberAxis numberAxisY = new NumberAxis();
     numberAxisY.setLabel("Price ($)");
-    numberAxisY.setStyle("-fx-tick-label-fill: #cbd5e1;");
+    numberAxisY.setStyle("-fx-tick-label-fill: " + AXIS_TICK_COLOR + ";");
 
     LineChart<Number, Number> lineChart = new LineChart<>(numberAxisX, numberAxisY);
     lineChart.setTitle(null);
+    lineChart.setHorizontalZeroLineVisible(false);
+    lineChart.setVerticalZeroLineVisible(false);
     lineChart.setStyle(
         "-fx-background-color: transparent; "
             + "-fx-legend-visible: false; "
-            + "-fx-padding: 16;");
+            + "-fx-padding: 16; "
+            + "-fx-plot-background-color: rgba(15, 23, 42, 0.55); "
+            + "-fx-grid-line-color: #334155;");
 
     XYChart.Series<Number, Number> series = new XYChart.Series<>();
     series.setName("Price");
 
-    List<BigDecimal> prices = stock.getHistoricalPrices();
     for (int i = 0; i < prices.size(); i++) {
       series.getData().add(new XYChart.Data<>(i + 1, prices.get(i)));
     }
 
     lineChart.getData().add(series);
     styleChartSeries(series);
+    styleAxisLabels(numberAxisX, numberAxisY);
 
     return lineChart;
+  }
+
+  /**
+   * Applies a higher-contrast color to axis labels so they remain readable on the popup background.
+   *
+   * @param numberAxisX the week axis
+   * @param numberAxisY the price axis
+   */
+  private void styleAxisLabels(NumberAxis numberAxisX, NumberAxis numberAxisY) {
+    numberAxisX.applyCss();
+    numberAxisY.applyCss();
+
+    if (numberAxisX.lookup(".axis-label") != null) {
+      numberAxisX.lookup(".axis-label").setStyle("-fx-text-fill: " + AXIS_LABEL_COLOR + ";");
+    }
+    if (numberAxisY.lookup(".axis-label") != null) {
+      numberAxisY.lookup(".axis-label").setStyle("-fx-text-fill: " + AXIS_LABEL_COLOR + ";");
+    }
   }
 
   /**

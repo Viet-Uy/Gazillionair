@@ -51,6 +51,7 @@ public class DashboardView implements ModelObserver {
   private Label holdingsLabel;
   private Label weekLabel;
   private Label statusBadge;
+  private Label statusProgressLabel;
   private Label weeklyChangeLabel;
   private Label overallPerformanceLabel;
 
@@ -162,9 +163,23 @@ public class DashboardView implements ModelObserver {
     statusBadge.setPadding(new Insets(4, 12, 4, 12));
     applyStatusBadgeStyle(session.getPlayer().getStatus());
 
+    statusProgressLabel = new Label(session.getPlayer().getStatusProgressText());
+    statusProgressLabel.setFont(Font.font("System", FontWeight.MEDIUM, 11));
+    statusProgressLabel.setTextFill(Color.web("#94a3b8"));
+    statusProgressLabel.setWrapText(true);
+    statusProgressLabel.setMaxWidth(420);
+
+    HBox nameRow = new HBox(12);
+    nameRow.setAlignment(Pos.CENTER_LEFT);
+    nameRow.getChildren().addAll(playerName, statusBadge);
+
+    VBox playerText = new VBox(4);
+    playerText.setAlignment(Pos.CENTER_LEFT);
+    playerText.getChildren().addAll(nameRow, statusProgressLabel);
+
     HBox playerInfo = new HBox(12);
     playerInfo.setAlignment(Pos.CENTER_LEFT);
-    playerInfo.getChildren().addAll(logo, playerName, statusBadge);
+    playerInfo.getChildren().addAll(logo, playerText);
 
     HBox actionButtons = new HBox(12);
     actionButtons.setAlignment(Pos.CENTER_RIGHT);
@@ -445,6 +460,7 @@ public class DashboardView implements ModelObserver {
       holdingsLabel.setText(String.valueOf(session.getHoldings().size()));
       weekLabel.setText(String.valueOf(session.getCurrentWeek()));
       statusBadge.setText(session.getPlayer().getStatus().toString());
+      statusProgressLabel.setText(session.getPlayer().getStatusProgressText());
       applyStatusBadgeStyle(session.getPlayer().getStatus());
       setOverallPerformance();
 

@@ -13,6 +13,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -26,6 +27,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.Stage;
 
 /**
  * MarketView displays searchable stock listings and inline buy/sell actions.
@@ -45,13 +47,16 @@ public class MarketView {
   private final Button buyButton;
   private final Button buyMaxButton;
   private final Button sellButton;
-  private final VBox chartPanel;
+  private final Button watchChartButton;
   private Consumer<Stock> onRowSelected;
   private BiConsumer<Stock, BigDecimal> onBuyRequested;
   private BiConsumer<Stock, BigDecimal> onSellRequested;
   private Consumer<Stock> onBuyMaxRequested;
   private Stock selectedStock;
-  private PriceChartComponent currentChart;
+  private Stage chartStage;
+
+  private static final int CHART_WINDOW_WIDTH = 640;
+  private static final int CHART_WINDOW_HEIGHT = 420;
 
   /**
    * Constructs a MarketView with empty stock list.
@@ -71,7 +76,7 @@ public class MarketView {
     this.buyButton = new Button("Buy");
     this.buyMaxButton = new Button("Buy Max");
     this.sellButton = new Button("Sell");
-    this.chartPanel = new VBox(8);
+    this.watchChartButton = new Button("Watch Graph");
     initializeUi();
   }
 
@@ -86,20 +91,15 @@ public class MarketView {
   }
 
   /**
-   * Creates the right panel containing chart and trade panel.
+   * Creates the right panel containing the trade panel.
    *
-   * @return VBox with chart and trade sections
+   * @return VBox with trade section
    */
   private VBox createRightPanel() {
     VBox rightPanel = new VBox(12);
     rightPanel.setFillWidth(true);
-    chartPanel.setPrefHeight(300);
-    chartPanel.setStyle("-fx-border-color: #334155; "
-        + "-fx-border-width: 1; "
-        + "-fx-background-radius: 8; "
-        + "-fx-border-radius: 8;");
     ScrollPane tradePanelContainer = createTradePanelContainer();
-    rightPanel.getChildren().addAll(chartPanel, tradePanelContainer);
+    rightPanel.getChildren().add(tradePanelContainer);
     VBox.setVgrow(tradePanelContainer, Priority.ALWAYS);
     return rightPanel;
   }
@@ -165,14 +165,17 @@ public class MarketView {
     buyButton.setStyle(buttonStyle("#16a34a"));
     sellButton.setStyle(buttonStyle("#dc2626"));
     buyMaxButton.setStyle(buttonStyle("#059669"));
+    watchChartButton.setStyle(buttonStyle("#3b82f6"));
 
     buyButton.setMaxWidth(Double.MAX_VALUE);
     sellButton.setMaxWidth(Double.MAX_VALUE);
     buyMaxButton.setMaxWidth(Double.MAX_VALUE);
+    watchChartButton.setMaxWidth(Double.MAX_VALUE);
 
     buyButton.setOnAction(event -> onBuyClicked());
     sellButton.setOnAction(event -> onSellClicked());
     buyMaxButton.setOnAction(event -> onBuyMaxClicked());
+    watchChartButton.setOnAction(event -> onWatchChartClicked());
 
     tradeFeedbackLabel.setWrapText(true);
     tradeFeedbackLabel.setTextFill(Color.web("#94a3b8"));
@@ -191,6 +194,7 @@ public class MarketView {
             buyButton,
             buyMaxButton,
             sellButton,
+            watchChartButton,
             tradeFeedbackLabel);
     return tradePanel;
   }
@@ -275,7 +279,6 @@ public class MarketView {
               selectedStockLabel.setText(selected.getSymbol() + " - " + selected.getCompany());
               selectedPriceLabel.setText("Price: $" + selected.getSalesPrice());
               updateAmountHint();
-              displayPriceChart(selected);
               if (onRowSelected != null) {
                 onRowSelected.accept(selected);
               }
@@ -359,6 +362,28 @@ public class MarketView {
     }
     if (onBuyMaxRequested != null) {
       onBuyMaxRequested.accept(selectedStock);
+    }
+  }
+
+  private void onWatchChartClicked() {
+    if (selectedStock == null) {
+      showTradeError("Select a stock first.");
+      return;
+    }
+    showChartPopup(selectedStock);
+  }
+
+  /**
+   * Refreshes the selected stock details and updates the chart if it is open.
+   */
+  public void refreshSelectedStock() {
+    if (selectedStock == null) {
+      return;
+    }
+    selectedPriceLabel.setText("Price: $" + selectedStock.getSalesPrice());
+    updateAmountHint();
+    if (chartStage != null && chartStage.isShowing()) {
+      updateChart(selectedStock);
     }
   }
 
@@ -500,15 +525,42 @@ public class MarketView {
   }
 
   /**
-   * Displays the price chart for the selected stock.
+   * Displays the price chart in a separate pop-up window.
    *
    * @param stock the stock to display
    */
-  private void displayPriceChart(Stock stock) {
-    chartPanel.getChildren().clear();
-    currentChart = new PriceChartComponent(stock);
-    chartPanel.getChildren().add(currentChart.getRoot());
-    VBox.setVgrow(currentChart.getRoot(), Priority.ALWAYS);
+  private void showChartPopup(Stock stock) {
+    if (chartStage == null) {
+      chartStage = createChartStage();
+    }
+    updateChart(stock);
+    if (!chartStage.isShowing()) {
+      chartStage.show();
+    } else {
+      chartStage.toFront();
+    }
+  }
+
+  private Stage createChartStage() {
+    Stage stage = new Stage();
+    stage.setTitle("Price Chart");
+    stage.setMinWidth(480);
+    stage.setMinHeight(360);
+    stage.setOnHidden(event -> chartStage = null);
+    return stage;
+  }
+
+  private void updateChart(Stock stock) {
+    PriceChartComponent chartComponent = new PriceChartComponent(stock);
+    if (chartStage.getScene() == null) {
+      Scene scene = new Scene(chartComponent.getRoot(), CHART_WINDOW_WIDTH,
+          CHART_WINDOW_HEIGHT);
+      scene.setFill(Color.web("#0f172a"));
+      chartStage.setScene(scene);
+    } else {
+      chartStage.getScene().setRoot(chartComponent.getRoot());
+    }
+    chartStage.setTitle("Price Chart - " + stock.getSymbol());
   }
 
   /**

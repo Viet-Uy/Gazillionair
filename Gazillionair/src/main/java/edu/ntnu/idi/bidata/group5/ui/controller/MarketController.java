@@ -228,6 +228,7 @@ public class MarketController {
   public void refreshStockTable() {
     List<Stock> currentStocks = session.getMarketStocks();
     view.updateStocks(currentStocks);
+    view.refreshSelectedStock();
   }
 
   /**
