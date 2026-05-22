@@ -1,6 +1,7 @@
 package edu.ntnu.idi.bidata.group5.ui.view;
 
 import edu.ntnu.idi.bidata.group5.model.Stock;
+import edu.ntnu.idi.bidata.group5.ui.view.components.PriceChartComponent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -44,11 +45,13 @@ public class MarketView {
   private final Button buyButton;
   private final Button buyMaxButton;
   private final Button sellButton;
+  private final VBox chartPanel;
   private Consumer<Stock> onRowSelected;
   private BiConsumer<Stock, BigDecimal> onBuyRequested;
   private BiConsumer<Stock, BigDecimal> onSellRequested;
   private Consumer<Stock> onBuyMaxRequested;
   private Stock selectedStock;
+  private PriceChartComponent currentChart;
 
   /**
    * Constructs a MarketView with empty stock list.
@@ -68,16 +71,37 @@ public class MarketView {
     this.buyButton = new Button("Buy");
     this.buyMaxButton = new Button("Buy Max");
     this.sellButton = new Button("Sell");
+    this.chartPanel = new VBox(8);
     initializeUi();
   }
 
   private void initializeUi() {
     root.setStyle("-fx-background-color: transparent;");
     HBox searchBox = createSearchBox();
-    HBox content = new HBox(16, stockTable, createTradePanelContainer());
+    VBox rightPanel = createRightPanel();
+    HBox content = new HBox(16, stockTable, rightPanel);
     HBox.setHgrow(stockTable, Priority.ALWAYS);
     VBox.setVgrow(content, Priority.ALWAYS);
     root.getChildren().addAll(searchBox, content);
+  }
+
+  /**
+   * Creates the right panel containing chart and trade panel.
+   *
+   * @return VBox with chart and trade sections
+   */
+  private VBox createRightPanel() {
+    VBox rightPanel = new VBox(12);
+    rightPanel.setFillWidth(true);
+    chartPanel.setPrefHeight(300);
+    chartPanel.setStyle("-fx-border-color: #334155; "
+        + "-fx-border-width: 1; "
+        + "-fx-background-radius: 8; "
+        + "-fx-border-radius: 8;");
+    ScrollPane tradePanelContainer = createTradePanelContainer();
+    rightPanel.getChildren().addAll(chartPanel, tradePanelContainer);
+    VBox.setVgrow(tradePanelContainer, Priority.ALWAYS);
+    return rightPanel;
   }
 
   private HBox createSearchBox() {
@@ -251,6 +275,7 @@ public class MarketView {
               selectedStockLabel.setText(selected.getSymbol() + " - " + selected.getCompany());
               selectedPriceLabel.setText("Price: $" + selected.getSalesPrice());
               updateAmountHint();
+              displayPriceChart(selected);
               if (onRowSelected != null) {
                 onRowSelected.accept(selected);
               }
@@ -472,6 +497,18 @@ public class MarketView {
    */
   public TextField getSearchInput() {
     return searchInput;
+  }
+
+  /**
+   * Displays the price chart for the selected stock.
+   *
+   * @param stock the stock to display
+   */
+  private void displayPriceChart(Stock stock) {
+    chartPanel.getChildren().clear();
+    currentChart = new PriceChartComponent(stock);
+    chartPanel.getChildren().add(currentChart.getRoot());
+    VBox.setVgrow(currentChart.getRoot(), Priority.ALWAYS);
   }
 
   /**
