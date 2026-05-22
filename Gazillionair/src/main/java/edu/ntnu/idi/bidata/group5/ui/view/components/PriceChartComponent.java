@@ -79,15 +79,15 @@ public class PriceChartComponent {
    * @return configured LineChart
    */
   private LineChart<Number, Number> createLineChart(Stock stock) {
-    NumberAxis xAxis = new NumberAxis();
-    xAxis.setLabel("Week");
-    xAxis.setStyle("-fx-tick-label-fill: #cbd5e1;");
+    NumberAxis numberAxisX = new NumberAxis();
+    numberAxisX.setLabel("Week");
+    numberAxisX.setStyle("-fx-tick-label-fill: #cbd5e1;");
 
-    NumberAxis yAxis = new NumberAxis();
-    yAxis.setLabel("Price ($)");
-    yAxis.setStyle("-fx-tick-label-fill: #cbd5e1;");
+    NumberAxis numberAxisY = new NumberAxis();
+    numberAxisY.setLabel("Price ($)");
+    numberAxisY.setStyle("-fx-tick-label-fill: #cbd5e1;");
 
-    LineChart<Number, Number> lineChart = new LineChart<>(xAxis, yAxis);
+    LineChart<Number, Number> lineChart = new LineChart<>(numberAxisX, numberAxisY);
     lineChart.setTitle(null);
     lineChart.setStyle(
         "-fx-background-color: transparent; "

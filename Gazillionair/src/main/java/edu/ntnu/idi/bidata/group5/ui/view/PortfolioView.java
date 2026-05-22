@@ -139,7 +139,6 @@ public class PortfolioView {
         + "-fx-background-radius: 8; "
         + "-fx-border-radius: 8;");
 
-    VBox rightPanel = new VBox(12, chartPanel, actionPanel);
     VBox.setVgrow(actionPanel, Priority.ALWAYS);
 
     sellAllButton.setOnAction(
@@ -171,6 +170,7 @@ public class PortfolioView {
     sellAllSelectedButton.setOnAction(ignored -> onSellAllSelectedClicked());
     sellButton.setOnAction(ignored -> onSellClicked());
 
+    VBox rightPanel = new VBox(12, chartPanel, actionPanel);
     root.getChildren().addAll(listPanel, rightPanel);
     refresh();
   }
