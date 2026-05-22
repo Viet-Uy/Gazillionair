@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.ntnu.idi.bidata.group5.model.GameSession;
-import edu.ntnu.idi.bidata.group5.model.Transaction;
 import edu.ntnu.idi.bidata.group5.model.Stock;
+import edu.ntnu.idi.bidata.group5.model.Transaction;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
