@@ -3,12 +3,17 @@ package edu.ntnu.idi.bidata.group5.ui.controller;
 import edu.ntnu.idi.bidata.group5.model.GameSession;
 import edu.ntnu.idi.bidata.group5.model.Purchase;
 import edu.ntnu.idi.bidata.group5.model.Sale;
+import edu.ntnu.idi.bidata.group5.model.Share;
 import edu.ntnu.idi.bidata.group5.model.Stock;
 import edu.ntnu.idi.bidata.group5.ui.view.MarketView;
+import edu.ntnu.idi.bidata.group5.ui.view.components.ReceiptDialog;
+import edu.ntnu.idi.bidata.group5.ui.view.components.TradePreviewDialog;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.function.Consumer;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
 /**
  * MarketController is responsible for handling market operations such as
@@ -156,7 +161,13 @@ public class MarketController {
 
   private void handleBuyRequest(Stock stock, BigDecimal quantity) {
     try {
+      Purchase previewPurchase = createPurchasePreview(stock, quantity);
+      if (!TradePreviewDialog.confirmPurchase(getOwnerStage(), previewPurchase)) {
+        view.showTradeError("Purchase cancelled.");
+        return;
+      }
       Purchase purchase = buy(stock.getSymbol(), quantity);
+      ReceiptDialog.showTransaction(getOwnerStage(), purchase);
       view.showTradeSuccess(
           "Bought "
               + purchase.getShare().getQuantity().stripTrailingZeros().toPlainString()
@@ -169,7 +180,13 @@ public class MarketController {
 
   private void handleSellRequest(Stock stock, BigDecimal quantity) {
     try {
+      Sale previewSale = createSalePreview(stock, quantity);
+      if (!TradePreviewDialog.confirmSale(getOwnerStage(), previewSale)) {
+        view.showTradeError("Sale cancelled.");
+        return;
+      }
       Sale sale = sell(stock.getSymbol(), quantity);
+      ReceiptDialog.showTransaction(getOwnerStage(), sale);
       view.showTradeSuccess(formatSaleMessage(sale, stock.getSymbol()));
     } catch (IllegalArgumentException | IllegalStateException exception) {
       view.showTradeError(exception.getMessage());
@@ -178,7 +195,13 @@ public class MarketController {
 
   private void handleBuyMaxRequest(Stock stock) {
     try {
+      Purchase previewPurchase = createPurchasePreview(stock, resolveMaxQuantity(stock));
+      if (!TradePreviewDialog.confirmPurchase(getOwnerStage(), previewPurchase)) {
+        view.showTradeError("Purchase cancelled.");
+        return;
+      }
       Purchase purchase = buyMax(stock.getSymbol());
+      ReceiptDialog.showTransaction(getOwnerStage(), purchase);
       view.showTradeSuccess(
           "Bought "
               + purchase.getShare().getQuantity().stripTrailingZeros().toPlainString()
@@ -211,6 +234,59 @@ public class MarketController {
 
   private String formatMoney(BigDecimal amount) {
     return "$" + amount.setScale(2, RoundingMode.HALF_UP);
+  }
+
+  private Purchase createPurchasePreview(Stock stock, BigDecimal quantity) {
+    Share share = new Share(stock, quantity, stock.getSalesPrice());
+    return new Purchase(share, session.getCurrentWeek());
+  }
+
+  private Sale createSalePreview(Stock stock, BigDecimal quantity) {
+    List<Share> ownedShares = session.getPlayer().getPortfolio().getShares(stock.getSymbol());
+    if (ownedShares.isEmpty()) {
+      throw new IllegalStateException("No owned share has enough quantity to sell");
+    }
+    BigDecimal totalOwnedQuantity = ownedShares.stream()
+        .map(Share::getQuantity)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+    if (totalOwnedQuantity.compareTo(quantity) < 0) {
+      throw new IllegalStateException("No owned share has enough quantity to sell");
+    }
+    BigDecimal weightedPurchasePrice = calculateWeightedPurchasePrice(ownedShares, quantity);
+    Share shareToSell = new Share(stock, quantity, weightedPurchasePrice);
+    return new Sale(shareToSell, session.getCurrentWeek());
+  }
+
+  private BigDecimal calculateWeightedPurchasePrice(List<Share> ownedShares,
+                                                    BigDecimal targetQuantity) {
+    BigDecimal remaining = targetQuantity;
+    BigDecimal totalCost = BigDecimal.ZERO;
+    for (Share share : ownedShares) {
+      if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+        break;
+      }
+      BigDecimal consumedQuantity = share.getQuantity().min(remaining);
+      totalCost = totalCost.add(consumedQuantity.multiply(share.getPurchasePrice()));
+      remaining = remaining.subtract(consumedQuantity);
+    }
+    return totalCost.divide(targetQuantity, 6, RoundingMode.HALF_UP);
+  }
+
+  private BigDecimal resolveMaxQuantity(Stock stock) {
+    BigDecimal denominator = stock.getSalesPrice().multiply(PURCHASE_FEE_MULTIPLIER);
+    BigDecimal quantity = session.getCashBalance().divide(denominator, 6, RoundingMode.DOWN);
+    if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalStateException("Not enough cash to buy this stock");
+    }
+    return quantity;
+  }
+
+  private Stage getOwnerStage() {
+    Scene scene = view.getRoot().getScene();
+    if (scene != null && scene.getWindow() instanceof Stage stage) {
+      return stage;
+    }
+    return null;
   }
 
   /**

@@ -1,6 +1,8 @@
 package edu.ntnu.idi.bidata.group5.ui.view.components;
 
 import edu.ntnu.idi.bidata.group5.model.Transaction;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
@@ -31,11 +33,17 @@ public class ReceiptDialog {
             + "\nSymbol: "
             + transaction.getShare().getStock().getSymbol()
             + "\nQuantity: "
-            + transaction.getShare().getQuantity()
+            + transaction.getShare().getQuantity().stripTrailingZeros().toPlainString()
             + "\nWeek: "
             + transaction.getWeek()
+            + "\nGross: "
+            + formatMoney(transaction.getCalculator().calculateGross())
+            + "\nCommission: "
+            + formatMoney(transaction.getCalculator().calculateCommission())
+            + "\nTax: "
+            + formatMoney(transaction.getCalculator().calculateTax())
             + "\nTotal: "
-            + transaction.getCalculator().calculateTotal());
+            + formatMoney(transaction.getCalculator().calculateTotal()));
     alert.showAndWait();
   }
 
@@ -54,5 +62,9 @@ public class ReceiptDialog {
     alert.setHeaderText("Unable to complete transaction");
     alert.setContentText(message);
     alert.showAndWait();
+  }
+
+  private static String formatMoney(BigDecimal amount) {
+    return "$" + amount.setScale(2, RoundingMode.HALF_UP);
   }
 }
