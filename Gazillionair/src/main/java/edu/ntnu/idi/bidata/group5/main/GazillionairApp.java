@@ -2,8 +2,9 @@ package edu.ntnu.idi.bidata.group5.main;
 
 import edu.ntnu.idi.bidata.group5.ui.view.StartView;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 /**
@@ -21,8 +22,8 @@ public class GazillionairApp extends Application {
     try {
       StartView startView = new StartView(primaryStage);
       Scene scene = new Scene(startView.getRoot(), WINDOW_WIDTH, WINDOW_HEIGHT);
-      
-      String cssResource = getClass().getResource("/styles/app.css").toExternalForm();
+
+      String cssResource = resolveCssResource();
       scene.getStylesheets().add(cssResource);
 
       primaryStage.setTitle(APP_TITLE);
@@ -32,9 +33,37 @@ public class GazillionairApp extends Application {
       primaryStage.centerOnScreen();
       primaryStage.show();
     } catch (Exception e) {
-      System.err.println("Failed to start application: " + e.getMessage());
-      e.printStackTrace();
+      showStartupErrorDialog(primaryStage, e);
     }
+  }
+
+  /**
+   * Resolves the application stylesheet path.
+   *
+   * @return the external form of the stylesheet resource
+   */
+  private String resolveCssResource() {
+    java.net.URL cssUrl = getClass().getResource("/styles/app.css");
+    if (cssUrl == null) {
+      throw new IllegalStateException("Stylesheet resource not found: /styles/app.css");
+    }
+    return cssUrl.toExternalForm();
+  }
+
+  /**
+   * Shows a user-facing startup failure dialog and closes the application afterward.
+   *
+   * @param primaryStage application stage
+   * @param exception startup failure
+   */
+  private void showStartupErrorDialog(Stage primaryStage, Exception exception) {
+    Alert alert = new Alert(Alert.AlertType.ERROR);
+    alert.initOwner(primaryStage);
+    alert.setTitle("Startup Failed");
+    alert.setHeaderText("Gazillionair could not start");
+    alert.setContentText(exception.getMessage());
+    alert.showAndWait();
+    Platform.exit();
   }
 
   /**

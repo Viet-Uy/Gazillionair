@@ -243,5 +243,18 @@ class GameSessionTest {
     assertEquals(before + 1, session.getCurrentWeek());
     assertEquals(1, notifications.get());
   }
+
+  @Test
+  void getPlayerStatusUsesPlayerStatusRules() {
+    GameSession session = new GameSession("Uy", new BigDecimal("10000"), stocks);
+    session.buy("AAPL", 1);
+    session.getPlayer().addMoney(new BigDecimal("3000"));
+
+    for (int week = 0; week < 25; week++) {
+      session.nextWeek();
+    }
+
+    assertEquals(PlayerStatus.NOVICE, session.getPlayerStatus());
+  }
 }
 

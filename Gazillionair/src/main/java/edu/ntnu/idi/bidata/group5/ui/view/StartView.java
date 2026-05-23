@@ -11,7 +11,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -37,13 +36,13 @@ public class StartView {
   private final StartController controller;
   private final BorderPane root;
   private final TextField playerNameInput;
-  private final Spinner<Integer> capitalSpinner;
+  private final TextField capitalInput;
   private File selectedStockFile;
   private Label fileStatusLabel;
 
-  private static final int DEFAULT_CAPITAL = 100000;
-  private static final int MIN_CAPITAL = 1000;
-  private static final int CAPITAL_STEP = 1000;
+  private static final BigDecimal DEFAULT_CAPITAL = new BigDecimal("100000");
+  private static final BigDecimal MIN_CAPITAL = new BigDecimal("1000");
+  private static final BigDecimal MAX_CAPITAL = new BigDecimal("1000000000");
 
   /**
    * Constructs a StartView with the given stage.
@@ -55,8 +54,7 @@ public class StartView {
     this.controller = new StartController();
     this.root = new BorderPane();
     this.playerNameInput = new TextField();
-    this.capitalSpinner = new Spinner<>(
-        MIN_CAPITAL, Integer.MAX_VALUE, DEFAULT_CAPITAL, CAPITAL_STEP);
+    this.capitalInput = new TextField(DEFAULT_CAPITAL.toPlainString());
     this.selectedStockFile = null;
 
     initializeUi();
@@ -184,18 +182,28 @@ public class StartView {
     label.setFont(Font.font("System", FontWeight.MEDIUM, 14));
     label.setTextFill(Color.web("#cbd5e1"));
 
-    capitalSpinner.setPrefHeight(40);
-    capitalSpinner.setStyle(
+    capitalInput.setPrefHeight(40);
+    capitalInput.setPromptText("Enter starting amount");
+    capitalInput.setStyle(
         "-fx-font-size: 14; "
             + "-fx-padding: 12px 16px; "
             + "-fx-background-color: rgba(15, 23, 42, 0.5); "
             + "-fx-border-color: #475569; "
             + "-fx-border-width: 1; "
             + "-fx-text-fill: white; "
+            + "-fx-prompt-text-fill: #64748b; "
             + "-fx-background-radius: 8; "
             + "-fx-border-radius: 8;");
 
-    section.getChildren().addAll(label, capitalSpinner);
+    Label helperText = new Label(
+        "Enter an amount from "
+            + MIN_CAPITAL.toPlainString()
+            + " to "
+            + MAX_CAPITAL.toPlainString());
+    helperText.setFont(Font.font("System", 11));
+    helperText.setTextFill(Color.web("#94a3b8"));
+
+    section.getChildren().addAll(label, capitalInput, helperText);
     return section;
   }
 
@@ -349,7 +357,7 @@ public class StartView {
 
   /**
    * Handles start game button action. Validates player name, retrieves capital from
-   * spinner, and initiates game via StartController. On success, navigates to
+   * the capital input, and initiates game via StartController. On success, navigates to
    * DashboardView. On failure, shows error alert.
    */
   private void onStartGame() {
@@ -364,7 +372,10 @@ public class StartView {
       return;
     }
 
-    BigDecimal capital = BigDecimal.valueOf(capitalSpinner.getValue());
+    BigDecimal capital = parseStartingCapital();
+    if (capital == null) {
+      return;
+    }
 
     try {
       GameSession session = controller.startGame(
@@ -372,6 +383,25 @@ public class StartView {
       SceneNavigator.openDashboard(stage, session);
     } catch (IllegalStateException e) {
       showError("Failed to start game: " + e.getMessage());
+    }
+  }
+
+  private BigDecimal parseStartingCapital() {
+    try {
+      BigDecimal capital = new BigDecimal(capitalInput.getText().trim().replace(',', '.'));
+      if (capital.compareTo(MIN_CAPITAL) < 0 || capital.compareTo(MAX_CAPITAL) > 0) {
+        showError(
+            "Starting capital must be between "
+                + MIN_CAPITAL.toPlainString()
+                + " and "
+                + MAX_CAPITAL.toPlainString()
+                + ".");
+        return null;
+      }
+      return capital;
+    } catch (NumberFormatException exception) {
+      showError("Starting capital must be a valid number.");
+      return null;
     }
   }
 

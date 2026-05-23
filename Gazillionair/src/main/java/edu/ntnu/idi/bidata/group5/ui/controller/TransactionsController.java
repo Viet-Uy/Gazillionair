@@ -114,6 +114,7 @@ public class TransactionsController {
       return "Select a transaction to view details.";
     }
 
+    String priceLabel = transaction instanceof Purchase ? "Purchase Price" : "Sale Price";
     return "Type: "
         + transaction.getClass().getSimpleName()
         + "\nSymbol: "
@@ -124,8 +125,10 @@ public class TransactionsController {
         + transaction.getWeek()
         + "\nQuantity: "
         + transaction.getShare().getQuantity().stripTrailingZeros().toPlainString()
-        + "\nPrice: "
-        + formatMoney(transaction.getShare().getStock().getSalesPrice())
+        + "\n"
+        + priceLabel
+        + ": "
+        + formatMoney(calculateUnitPrice(transaction))
         + "\nGross: "
         + formatMoney(transaction.getCalculator().calculateGross())
         + "\nCommission: "
@@ -133,7 +136,8 @@ public class TransactionsController {
         + "\nTax: "
         + formatMoney(transaction.getCalculator().calculateTax())
         + "\nTotal: "
-        + formatMoney(transaction.getCalculator().calculateTotal());
+        + formatMoney(transaction.getCalculator().calculateTotal())
+        + buildPurchasePriceBasisText(transaction);
   }
 
   private boolean matchesTypeFilter(Transaction transaction, String typeFilter) {
@@ -164,5 +168,17 @@ public class TransactionsController {
 
   private String formatMoney(BigDecimal amount) {
     return "$" + amount.setScale(2, RoundingMode.HALF_UP);
+  }
+
+  private BigDecimal calculateUnitPrice(Transaction transaction) {
+    return transaction.getCalculator().calculateGross()
+        .divide(transaction.getShare().getQuantity(), 6, RoundingMode.HALF_UP);
+  }
+
+  private String buildPurchasePriceBasisText(Transaction transaction) {
+    if (!(transaction instanceof Sale)) {
+      return "";
+    }
+    return "\nPurchase Price Basis: " + formatMoney(transaction.getShare().getPurchasePrice());
   }
 }

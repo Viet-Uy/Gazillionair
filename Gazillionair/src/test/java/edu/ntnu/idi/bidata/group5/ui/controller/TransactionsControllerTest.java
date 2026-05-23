@@ -78,7 +78,17 @@ class TransactionsControllerTest {
 
     assertTrue(details.contains("Type: Purchase"));
     assertTrue(details.contains("Symbol: AAPL"));
+    assertTrue(details.contains("Purchase Price: $100.00"));
     assertTrue(details.contains("Gross: $100.00"));
+  }
+
+  @Test
+  void getTransactionDetailsShowsSaleSpecificPricingDetails() {
+    String details = controller.getTransactionDetails(controller.getTransactions().get(1));
+
+    assertTrue(details.contains("Type: Sale"));
+    assertTrue(details.contains("Sale Price: $"));
+    assertTrue(details.contains("Purchase Price Basis: $100.00"));
   }
 }
 

@@ -9,6 +9,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -25,7 +26,7 @@ public class TransactionsView {
   private final ComboBox<String> typeFilter;
   private final ComboBox<String> weekFilter;
   private final ListView<Transaction> transactionsList;
-  private final Label detailLabel;
+  private final TextArea detailArea;
   private final TransactionsController controller;
 
   /**
@@ -44,7 +45,7 @@ public class TransactionsView {
     this.typeFilter = new ComboBox<>();
     this.weekFilter = new ComboBox<>();
     this.transactionsList = new ListView<>();
-    this.detailLabel = new Label("Select a transaction to view details.");
+    this.detailArea = new TextArea("Select a transaction to view details.");
     initialize();
   }
 
@@ -119,7 +120,7 @@ public class TransactionsView {
     });
     transactionsList.getSelectionModel()
         .selectedItemProperty()
-        .addListener((obs, oldValue, newValue) -> detailLabel.setText(
+        .addListener((obs, oldValue, newValue) -> detailArea.setText(
             controller.getTransactionDetails(newValue)));
 
     VBox card = new VBox(8, transactionsTitle, transactionsList);
@@ -131,10 +132,19 @@ public class TransactionsView {
     Label detailTitle = new Label("Transaction Details");
     detailTitle.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 14; -fx-font-weight: 700;");
 
-    detailLabel.setWrapText(true);
-    detailLabel.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 13;");
+    detailArea.setEditable(false);
+    detailArea.setWrapText(true);
+    detailArea.setPrefRowCount(9);
+    detailArea.setStyle(
+        "-fx-control-inner-background: rgba(15, 23, 42, 0.35); "
+            + "-fx-text-fill: #cbd5e1; "
+            + "-fx-highlight-fill: #0ea5e9; "
+            + "-fx-highlight-text-fill: white; "
+            + "-fx-font-size: 13; "
+            + "-fx-background-radius: 6; "
+            + "-fx-border-color: transparent;");
 
-    VBox card = new VBox(8, detailTitle, detailLabel);
+    VBox card = new VBox(8, detailTitle, detailArea);
     card.setPadding(new Insets(12));
     card.setStyle(
         "-fx-background-color: rgba(15, 23, 42, 0.65); "
@@ -173,7 +183,7 @@ public class TransactionsView {
             searchInput.getText())));
 
     if (transactionsList.getItems().isEmpty()) {
-      detailLabel.setText("No transactions match the selected filters.");
+      detailArea.setText("No transactions match the selected filters.");
       return;
     }
 

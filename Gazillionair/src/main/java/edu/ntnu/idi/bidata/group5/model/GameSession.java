@@ -257,16 +257,7 @@ public class GameSession implements ObservableModel {
    * @return player status
    */
   public PlayerStatus getPlayerStatus() {
-    BigDecimal growth =
-        getNetWorth().divide(player.getStartingMoney(), 2, java.math.RoundingMode.HALF_UP);
-    int weeks = getCurrentWeek();
-    if (weeks >= 20 && growth.compareTo(BigDecimal.valueOf(2.0)) >= 0) {
-      return PlayerStatus.SPECULATOR;
-    } else if (weeks >= 10 && growth.compareTo(BigDecimal.valueOf(1.2)) >= 0) {
-      return PlayerStatus.INVESTOR;
-    } else {
-      return PlayerStatus.NOVICE;
-    }
+    return player.getStatus();
   }
 
   /**
