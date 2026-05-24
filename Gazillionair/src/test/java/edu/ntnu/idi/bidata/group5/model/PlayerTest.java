@@ -52,6 +52,12 @@ class PlayerTest {
   }
 
   @Test
+  void constructorThrowsOnZeroStartingMoney() {
+    assertThrows(IllegalArgumentException.class,
+        () -> new Player("Test", BigDecimal.ZERO));
+  }
+
+  @Test
   void getNetWorthReturnsCurrentBalance() {
     assertEquals(0, player.getNetWorth().compareTo(new BigDecimal("1000")));
   }

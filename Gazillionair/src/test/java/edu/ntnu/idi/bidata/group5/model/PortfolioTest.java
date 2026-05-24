@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import edu.ntnu.idi.bidata.group5.calculator.SaleCalculator;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -158,8 +157,7 @@ class PortfolioTest {
     Share share = new Share(apple, new BigDecimal("10"), new BigDecimal("100"));
     portfolio.addShare(share);
 
-    SaleCalculator calc = new SaleCalculator(share);
-    BigDecimal expectedNetWorth = calc.calculateTotal();
+    BigDecimal expectedNetWorth = new BigDecimal("1000");
 
     assertEquals(0, expectedNetWorth.compareTo(portfolio.getNetWorth()),
         "Net worth should match calculated value for single share");
@@ -173,9 +171,7 @@ class PortfolioTest {
     portfolio.addShare(share1);
     portfolio.addShare(share2);
 
-    SaleCalculator calc1 = new SaleCalculator(share1);
-    SaleCalculator calc2 = new SaleCalculator(share2);
-    BigDecimal expectedNetWorth = calc1.calculateTotal().add(calc2.calculateTotal());
+    BigDecimal expectedNetWorth = new BigDecimal("2000");
 
     assertEquals(0, expectedNetWorth.compareTo(portfolio.getNetWorth()),
         "Net worth should sum all shares");

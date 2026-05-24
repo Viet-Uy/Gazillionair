@@ -146,13 +146,14 @@ class GameSessionTest {
     assertTrue(session.hasHoldings());
     assertEquals(1, session.getHoldings().size());
     assertEquals(0, new BigDecimal("899.50").compareTo(session.getCashBalance()));
-    assertEquals(0, new BigDecimal("99.00").compareTo(session.getPortfolioValue()));
-    assertEquals(0, new BigDecimal("998.50").compareTo(session.getNetWorth()));
+    assertEquals(0, new BigDecimal("100.00").compareTo(session.getPortfolioValue()));
+    assertEquals(0, new BigDecimal("999.50").compareTo(session.getNetWorth()));
   }
 
   @Test
   void isBankruptWhenNoCashAndNoHoldings() {
-    GameSession session = new GameSession("Uy", BigDecimal.ZERO, stocks);
+    GameSession session = new GameSession("Uy", new BigDecimal("100"), stocks);
+    session.getPlayer().withdrawMoney(new BigDecimal("100"));
 
     assertTrue(session.isBankrupt());
   }

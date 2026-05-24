@@ -19,8 +19,8 @@ public class GameStateValidator {
     if (data.playerName == null || data.playerName.isBlank()) {
       throw new IllegalArgumentException("Player name cannot be null or blank");
     }
-    if (data.startingCapital == null || data.startingCapital.compareTo(BigDecimal.ZERO) < 0) {
-      throw new IllegalArgumentException("Starting capital cannot be null or negative");
+    if (data.startingCapital == null || data.startingCapital.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("Starting capital must be greater than zero");
     }
     if (data.cashBalance == null || data.cashBalance.compareTo(BigDecimal.ZERO) < 0) {
       throw new IllegalArgumentException("Cash balance cannot be null or negative");

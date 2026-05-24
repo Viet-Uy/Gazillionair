@@ -10,11 +10,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * StartController class is responsible for handling the logic related
- * to starting a new game session.
- * It will be used to handle the logic related to starting a new game session,
- * such as loading stock data from a file, initializing the game session,
- * and other relevant logic related to starting a new game session.
+ * Handles creation, loading, and saving of game sessions from the start screen.
  */
 public class StartController {
 
@@ -22,7 +18,7 @@ public class StartController {
   private final GameStateFileHandler gameStateFileHandler;
 
   /**
-   * Constructor for the StartController, initializes the StockFileHandler.
+   * Creates a controller with file handlers for stock data and saved game state.
    */
   public StartController() {
     this.stockFileHandler = new StockFileHandler();
@@ -59,11 +55,11 @@ public class StartController {
    * @param playerName the name of the player starting the game session.
    * @param startingCapital the initial capital for the player in the game session.
    * @return a new GameSession initialized with the sample stock data and player information.
-   * @throws IllegalStateException if there is an error loading the sample stock data from the
+   * @throws IllegalStateException if the sample stock data cannot be loaded
    */
   public GameSession startWithSampleData(String playerName, BigDecimal startingCapital) {
     try {
-      List<Stock> stocks = stockFileHandler.readFromFile("src/main/resources/sp500.csv");
+      List<Stock> stocks = stockFileHandler.readFromResource("/sp500.csv");
       return new GameSession(playerName, startingCapital, stocks);
     } catch (IOException e) {
       throw new IllegalStateException("Failed to load sample stock data", e);

@@ -5,12 +5,14 @@ import edu.ntnu.idi.bidata.group5.ui.controller.TransactionsController;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -26,7 +28,7 @@ public class TransactionsView {
   private final ComboBox<String> typeFilter;
   private final ComboBox<String> weekFilter;
   private final ListView<Transaction> transactionsList;
-  private final TextArea detailArea;
+  private final Button viewDetailsButton;
   private final TransactionsController controller;
 
   /**
@@ -45,7 +47,7 @@ public class TransactionsView {
     this.typeFilter = new ComboBox<>();
     this.weekFilter = new ComboBox<>();
     this.transactionsList = new ListView<>();
-    this.detailArea = new TextArea("Select a transaction to view details.");
+    this.viewDetailsButton = new Button("View Details");
     initialize();
   }
 
@@ -59,9 +61,8 @@ public class TransactionsView {
 
     HBox filterBar = createFilterBar();
     VBox listCard = createTransactionsCard();
-    VBox detailCard = createDetailCard();
 
-    root.getChildren().addAll(summaryLabel, filterBar, listCard, detailCard);
+    root.getChildren().addAll(summaryLabel, filterBar, listCard);
     VBox.setVgrow(listCard, Priority.ALWAYS);
     refresh();
   }
@@ -93,6 +94,19 @@ public class TransactionsView {
     Label transactionsTitle = new Label("Transaction History");
     transactionsTitle.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 14; -fx-font-weight: 700;");
 
+    viewDetailsButton.setDisable(true);
+    viewDetailsButton.setStyle(
+        "-fx-background-color: #0ea5e9; "
+            + "-fx-text-fill: white; "
+            + "-fx-font-weight: 700; "
+            + "-fx-padding: 8 14; "
+            + "-fx-background-radius: 6; "
+            + "-fx-cursor: hand;");
+    viewDetailsButton.setOnAction(event -> showTransactionDetails());
+
+    HBox headerRow = new HBox(12, transactionsTitle, viewDetailsButton);
+    headerRow.setAlignment(Pos.CENTER_LEFT);
+
     transactionsList.setStyle(
         "-fx-control-inner-background: rgba(15, 23, 42, 0.70); "
             + "-fx-background-color: rgba(15, 23, 42, 0.70); "
@@ -120,37 +134,15 @@ public class TransactionsView {
     });
     transactionsList.getSelectionModel()
         .selectedItemProperty()
-        .addListener((obs, oldValue, newValue) -> detailArea.setText(
-            controller.getTransactionDetails(newValue)));
+        .addListener((obs, oldValue, newValue) -> viewDetailsButton.setDisable(newValue == null));
+    transactionsList.setOnMouseClicked(event -> {
+      if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
+        showTransactionDetails();
+      }
+    });
 
-    VBox card = new VBox(8, transactionsTitle, transactionsList);
+    VBox card = new VBox(8, headerRow, transactionsList);
     VBox.setVgrow(transactionsList, Priority.ALWAYS);
-    return card;
-  }
-
-  private VBox createDetailCard() {
-    Label detailTitle = new Label("Transaction Details");
-    detailTitle.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 14; -fx-font-weight: 700;");
-
-    detailArea.setEditable(false);
-    detailArea.setWrapText(true);
-    detailArea.setPrefRowCount(9);
-    detailArea.setStyle(
-        "-fx-control-inner-background: rgba(15, 23, 42, 0.35); "
-            + "-fx-text-fill: #cbd5e1; "
-            + "-fx-highlight-fill: #0ea5e9; "
-            + "-fx-highlight-text-fill: white; "
-            + "-fx-font-size: 13; "
-            + "-fx-background-radius: 6; "
-            + "-fx-border-color: transparent;");
-
-    VBox card = new VBox(8, detailTitle, detailArea);
-    card.setPadding(new Insets(12));
-    card.setStyle(
-        "-fx-background-color: rgba(15, 23, 42, 0.65); "
-            + "-fx-border-color: #334155; "
-            + "-fx-border-radius: 8; "
-            + "-fx-background-radius: 8;");
     return card;
   }
 
@@ -183,13 +175,32 @@ public class TransactionsView {
             searchInput.getText())));
 
     if (transactionsList.getItems().isEmpty()) {
-      detailArea.setText("No transactions match the selected filters.");
+      viewDetailsButton.setDisable(true);
       return;
     }
 
     if (transactionsList.getSelectionModel().getSelectedItem() == null) {
       transactionsList.getSelectionModel().selectFirst();
     }
+  }
+
+  private void showTransactionDetails() {
+    Transaction selectedTransaction = transactionsList.getSelectionModel().getSelectedItem();
+    if (selectedTransaction == null) {
+      return;
+    }
+
+    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    if (root.getScene() != null && root.getScene().getWindow() != null) {
+      alert.initOwner(root.getScene().getWindow());
+    }
+    alert.setTitle("Transaction Details");
+    alert.setHeaderText(
+        selectedTransaction.getClass().getSimpleName()
+            + " - "
+            + selectedTransaction.getShare().getStock().getSymbol());
+    alert.setContentText(controller.getTransactionDetails(selectedTransaction));
+    alert.showAndWait();
   }
 
   private String inputStyle() {

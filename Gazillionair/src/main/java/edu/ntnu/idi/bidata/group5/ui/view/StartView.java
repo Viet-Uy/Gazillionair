@@ -11,15 +11,13 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
-import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
@@ -61,23 +59,31 @@ public class StartView {
   }
 
   private void initializeUi() {
-    StackPane centerPane = createCenterPane();
-    root.setCenter(centerPane);
+    ScrollPane scrollPane = createScrollableContent();
+    root.setCenter(scrollPane);
     root.setStyle(
         "-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #0f172a, "
             + "#1e293b, #0f172a);");
   }
 
   /**
-   * Creates the center StackPane containing the form card.
+   * Creates the scrollable center area containing the form card.
    *
-   * @return StackPane with centered form card
+   * @return ScrollPane with centered form card
    */
-  private StackPane createCenterPane() {
+  private ScrollPane createScrollableContent() {
     StackPane container = new StackPane();
+    container.setPadding(new Insets(24));
     VBox formCard = createFormCard();
     container.getChildren().add(formCard);
-    return container;
+    ScrollPane scrollPane = new ScrollPane(container);
+    scrollPane.setFitToWidth(true);
+    scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+    scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+    scrollPane.setStyle(
+        "-fx-background: transparent; "
+            + "-fx-background-color: transparent;");
+    return scrollPane;
   }
 
   /**
@@ -174,7 +180,7 @@ public class StartView {
   /**
    * Creates the starting capital input section.
    *
-   * @return VBox containing label and spinner control
+   * @return VBox containing label, text field, and helper text
    */
   private VBox createCapitalSection() {
     final VBox section = new VBox(8);
