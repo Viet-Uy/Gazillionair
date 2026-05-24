@@ -1,6 +1,7 @@
 package edu.ntnu.idi.bidata.group5.ui.view;
 
 import edu.ntnu.idi.bidata.group5.model.Stock;
+import edu.ntnu.idi.bidata.group5.ui.view.components.AppDialog;
 import edu.ntnu.idi.bidata.group5.ui.view.components.PriceChartComponent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -152,8 +153,9 @@ public class MarketView {
     quantityLabel.setTextFill(Color.web("#cbd5e1"));
     quantityInput.setPromptText("e.g. 1.25");
     quantityInput.setStyle(inputStyle());
+    quantityInput.textProperty().addListener((obs, oldText, newText) -> updateAmountHint());
 
-    Label amountLabel = new Label("Buy for amount");
+    Label amountLabel = new Label("Amount");
     amountLabel.setTextFill(Color.web("#cbd5e1"));
     amountInput.setPromptText("e.g. 250");
     amountInput.setStyle(inputStyle());
@@ -161,6 +163,7 @@ public class MarketView {
 
     amountHintLabel.setTextFill(Color.web("#94a3b8"));
     amountHintLabel.setWrapText(true);
+    amountHintLabel.setText("Choose one input: Quantity or Amount.");
 
     buyButton.setStyle(buttonStyle("#16a34a"));
     sellButton.setStyle(buttonStyle("#dc2626"));
@@ -332,7 +335,7 @@ public class MarketView {
       showTradeError("Select a stock first.");
       return;
     }
-    BigDecimal quantity = resolveBuyQuantity();
+    BigDecimal quantity = resolveTradeQuantity();
     if (quantity == null) {
       return;
     }
@@ -346,7 +349,7 @@ public class MarketView {
       showTradeError("Select a stock first.");
       return;
     }
-    BigDecimal quantity = parsePositiveDecimal(quantityInput.getText(), "Enter a valid quantity.");
+    BigDecimal quantity = resolveTradeQuantity();
     if (quantity == null) {
       return;
     }
@@ -387,13 +390,19 @@ public class MarketView {
     }
   }
 
-  private BigDecimal resolveBuyQuantity() {
+  private BigDecimal resolveTradeQuantity() {
     String quantityText = quantityInput.getText();
     String amountText = amountInput.getText();
     boolean hasQuantity = quantityText != null && !quantityText.isBlank();
     boolean hasAmount = amountText != null && !amountText.isBlank();
     if (!hasQuantity && !hasAmount) {
+      showTradeInputRequiredDialog();
       showTradeError("Enter quantity or amount.");
+      return null;
+    }
+    if (hasQuantity && hasAmount) {
+      showTradeInputConflictDialog();
+      showTradeError("Use either quantity or amount, not both.");
       return null;
     }
     if (hasQuantity) {
@@ -421,24 +430,56 @@ public class MarketView {
   }
 
   private void updateAmountHint() {
-    if (selectedStock == null || amountInput.getText().isBlank()) {
-      amountHintLabel.setText("Enter quantity or amount.");
+    String quantityText = quantityInput.getText();
+    String amountText = amountInput.getText();
+    boolean hasQuantity = quantityText != null && !quantityText.isBlank();
+    boolean hasAmount = amountText != null && !amountText.isBlank();
+    if (hasQuantity && hasAmount) {
+      amountHintLabel.setText("Use either quantity or amount.");
+      amountHintLabel.setTextFill(Color.web("#fbbf24"));
+      return;
+    }
+    amountHintLabel.setTextFill(Color.web("#94a3b8"));
+    if (selectedStock == null || !hasAmount) {
+      amountHintLabel.setText("Choose one input: Quantity or Amount.");
       return;
     }
     BigDecimal amount;
     try {
-      amount = new BigDecimal(amountInput.getText().trim().replace(',', '.'));
+      amount = new BigDecimal(amountText.trim().replace(',', '.'));
       if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-        amountHintLabel.setText("Enter quantity or amount.");
+        amountHintLabel.setText("Choose one input: Quantity or Amount.");
         return;
       }
     } catch (NumberFormatException exception) {
-      amountHintLabel.setText("Enter quantity or amount.");
+      amountHintLabel.setText("Choose one input: Quantity or Amount.");
       return;
     }
     BigDecimal quantity = amount.divide(selectedStock.getSalesPrice(), 6, RoundingMode.HALF_UP);
     amountHintLabel.setText(
         "Estimated quantity: " + quantity.stripTrailingZeros().toPlainString() + " shares");
+  }
+
+  private void showTradeInputConflictDialog() {
+    Stage ownerStage = null;
+    if (root.getScene() != null && root.getScene().getWindow() instanceof Stage stage) {
+      ownerStage = stage;
+    }
+    AppDialog.showError(
+        ownerStage,
+        "Choose One Input",
+        "Use either Quantity or Amount for the trade, not both at the same time.");
+  }
+
+  private void showTradeInputRequiredDialog() {
+    Stage ownerStage = null;
+    if (root.getScene() != null && root.getScene().getWindow() instanceof Stage stage) {
+      ownerStage = stage;
+    }
+    AppDialog.showError(
+        ownerStage,
+        "Missing Trade Input",
+        "Enter either Quantity or Amount before submitting the trade.");
   }
 
   /**

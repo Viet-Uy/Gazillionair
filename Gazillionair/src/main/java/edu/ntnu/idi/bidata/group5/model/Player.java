@@ -38,9 +38,8 @@ public class Player {
    * @param name the name of the player
    * @param startingMoney the starting amount of money
    * @throws IllegalArgumentException if the name is {@code null} or blank,
-   *     or if the starting money is {@code null} or not positive
+   *     or if the starting money is {@code null} or negative
    */
-
   public Player(final String name, final BigDecimal startingMoney) {
     if (name == null || name.isBlank()) {
       throw new IllegalArgumentException("Name cannot be null or blank");
@@ -48,8 +47,8 @@ public class Player {
     if (startingMoney == null) {
       throw new IllegalArgumentException("Starting money cannot be null");
     }
-    if (startingMoney.compareTo(BigDecimal.ZERO) < 0) {
-      throw new IllegalArgumentException("Starting money cannot be less than zero");
+    if (startingMoney.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("Starting money must be greater than zero");
     }
     this.name = name;
     this.startingMoney = startingMoney;

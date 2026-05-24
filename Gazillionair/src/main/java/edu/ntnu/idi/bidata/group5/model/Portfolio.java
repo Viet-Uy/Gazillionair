@@ -1,6 +1,5 @@
 package edu.ntnu.idi.bidata.group5.model;
 
-import edu.ntnu.idi.bidata.group5.calculator.SaleCalculator;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,17 +97,14 @@ public class Portfolio {
   }
 
   /**
-   * Calculates the net worth of the portfolio.
-   * and returning the total value of the portfolio as an integer.
+   * Calculates the current market value of the portfolio based on stock sales prices.
    *
-   * @return the net worth of the portfolio as an integer
-   * @throws IllegalStateException if the portfolio is empty
+   * @return the current market value of all owned shares
    */
   public BigDecimal getNetWorth() {
     BigDecimal total = BigDecimal.ZERO;
     for (Share share : shares) {
-      SaleCalculator calc = new SaleCalculator(share);
-      total = total.add(calc.calculateTotal());
+      total = total.add(share.getStock().getSalesPrice().multiply(share.getQuantity()));
     }
     return total;
   }
