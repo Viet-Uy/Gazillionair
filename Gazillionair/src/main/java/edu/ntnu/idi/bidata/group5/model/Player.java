@@ -4,6 +4,7 @@ import static java.math.RoundingMode.HALF_UP;
 
 import edu.ntnu.idi.bidata.group5.service.TransactionArchive;
 import java.math.BigDecimal;
+import java.util.Locale;
 
 /**
  * Represents a player in the trading game.
@@ -180,7 +181,7 @@ public class Player {
    */
   public String getStatusProgressText() {
     int tradingWeeks = getTradingWeeks();
-    String growthPercent = String.format("%.2f", getGrowthPercent());
+    String growthPercent = String.format(Locale.US, "%.2f", getGrowthPercent());
 
     if (getStatus() == PlayerStatus.SPECULATOR) {
       return "Status Progress: Top rank reached | Trading Weeks: "
