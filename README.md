@@ -18,13 +18,40 @@
    - javafx-controls 25.0.1
    - junit-jupiter 6.0.1
 
- ## Build 🧱
+ ## Build and Run 🧱
+
+ The repository contains a Maven parent project at the root and the application module in `Gazillionair/`.
+
+ ### Build from repository root
+
  ```bash
  mvn clean package
+ ```
 
-Run ▶️
+ ### Run tests from repository root
 
+ ```bash
+ mvn test
+ ```
+
+ ### Run full verification from repository root
+
+ ```bash
+ mvn verify
+ ```
+
+ ### Start the application from repository root
+
+ ```bash
+ mvn -pl Gazillionair javafx:run
+ ```
+
+ Alternatively, run commands directly inside the application module:
+
+ ```bash
+ cd Gazillionair
  mvn javafx:run
+ ```
 
 How to Play 🎮
 
