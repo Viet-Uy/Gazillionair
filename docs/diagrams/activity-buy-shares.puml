@@ -1,0 +1,51 @@
+@startuml
+title Activity Diagram - Buy Shares
+
+start
+
+partition Player {
+  :Open market view;
+}
+
+partition System {
+  :Load and display available stocks;
+}
+
+partition Player {
+  :Select stock;
+}
+
+partition System {
+  :Display stock details and current price;
+}
+
+partition Player {
+  :Enter quantity;
+  :Click buy;
+}
+
+partition System {
+  :Validate selected stock and quantity;
+
+  if (Input valid?) then (yes)
+    :Calculate total price;
+    :Add fees or commission;
+    :Check available cash;
+
+    if (Enough cash?) then (yes)
+      :Create purchase transaction;
+      :Update portfolio;
+      :Update cash balance;
+      :Add transaction to history;
+      :Show purchase confirmation;
+    else (no)
+      :Show insufficient cash error;
+    endif
+  else (no)
+    :Show invalid input error;
+  endif
+}
+
+stop
+
+@enduml

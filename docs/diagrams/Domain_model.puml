@@ -1,0 +1,57 @@
+@startuml
+  title Gazillionair - Domenemodell
+
+  skinparam classAttributeIconSize 0
+  skinparam linetype ortho
+
+  class Player as "Spiller\n(Player)"
+  class Portfolio as "Portefølje\n(Portfolio)"
+  class Share as "Andel\n(Share)"
+  class Stock as "Aksje\n(Stock)"
+  class Exchange as "Børs\n(Exchange)"
+  class Transaction as "Transaksjon\n(Transaction)"
+  class Purchase as "Kjøp\n(Purchase)"
+  class Sale as "Salg\n(Sale)"
+  class TradingWeek as "Handelsuke\n(Trading Week)"
+  class MarketNews as "Markedsnyhet\n(Market News)"
+  class SavedGame as "Lagret spill\n(Saved Game)"
+  class StockDataFile as "Aksjedatafil\n(Stock Data File)"
+
+  Player "1" -- "1" Portfolio : har
+  Player "1" -- "0..*" Transaction : gjennomfører
+
+  Portfolio "1" -- "0..*" Share : inneholder
+  Share "1" -- "1" Stock : gjelder
+
+  Exchange "1" -- "0..*" Stock : tilbyr
+  Exchange "1" -- "1" TradingWeek : har
+
+  Transaction <|-- Purchase
+  Transaction <|-- Sale
+  Transaction "1" -- "1" Share : gjelder
+  Transaction "1" -- "1" TradingWeek : skjer i
+
+  MarketNews "0..*" -- "0..*" Stock : påvirker
+  MarketNews "1" -- "1" TradingWeek : publiseres i
+
+  StockDataFile "1" ..> "0..*" Stock : inneholder data om
+  SavedGame "1" ..> Player : lagrer tilstand for
+  SavedGame "1" ..> Portfolio : lagrer
+  SavedGame "1" ..> Transaction : lagrer
+
+  note right of Transaction
+    En transaksjon er enten
+    kjøp eller salg.
+  end note
+
+  note bottom of StockDataFile
+    CSV-fil med format:
+    symbol, name, price
+  end note
+
+  note bottom of SavedGame
+    Lokal JSON-fil brukt
+    for lagring og lasting.
+  end note
+
+  @enduml

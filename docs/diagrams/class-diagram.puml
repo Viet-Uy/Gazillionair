@@ -1,0 +1,101 @@
+@startuml
+title Class Diagram - Stock Game Domain Model
+
+skinparam classAttributeIconSize 0
+
+class Player {
+  - name: String
+  - startingMoney: BigDecimal
+  - money: BigDecimal
+  + getName(): String
+  + getMoney(): BigDecimal
+  + addMoney(amount: BigDecimal): BigDecimal
+  + withdrawMoney(amount: BigDecimal): BigDecimal
+  + getPortfolio(): Portfolio
+  + getTransactionArchive(): TransactionArchive
+  + getNetWorth(): BigDecimal
+}
+
+class Portfolio {
+  - shares: List<Share>
+  + addShare(share: Share): boolean
+  + removeShare(share: Share): boolean
+  + getShares(): List<Share>
+  + getShares(symbol: String): List<Share>
+  + getNetWorth(): BigDecimal
+}
+
+class Stock {
+  - symbol: String
+  - company: String
+  - prices: List<BigDecimal>
+  + getSymbol(): String
+  + getCompany(): String
+  + getSalesPrice(): BigDecimal
+  + addNewSalesPrice(price: BigDecimal): BigDecimal
+  + getHistoricalPrices(): List<BigDecimal>
+}
+
+class Share {
+  - stock: Stock
+  - quantity: BigDecimal
+  - purchasePrice: BigDecimal
+  + getStock(): Stock
+  + getQuantity(): BigDecimal
+  + getPurchasePrice(): BigDecimal
+}
+
+abstract class Transaction {
+  - share: Share
+  - week: int
+  # committed: boolean
+  + getShare(): Share
+  + getWeek(): int
+  + isCommitted(): boolean
+  + commit(player: Player): void
+}
+
+class Purchase {
+  + Purchase(share: Share, week: int)
+  + commit(player: Player): void
+}
+
+class Sale {
+  + Sale(share: Share, week: int)
+  + commit(player: Player): void
+}
+
+class TransactionArchive {
+  - transactions: List<Transaction>
+  + add(transaction: Transaction): void
+  + isEmpty(): boolean
+  + getTransactions(): List<Transaction>
+  + getPurchases(): List<Purchase>
+  + getSales(): List<Sale>
+  + countDistinctWeeks(): int
+}
+
+class Exchange {
+  - name: String
+  - stockMap: Map<String, Stock>
+  - week: int
+  + getName(): String
+  + getWeek(): int
+  + getStock(symbol: String): Stock
+  + findStocks(keyword: String): List<Stock>
+  + buy(player: Player, symbol: String, quantity: BigDecimal): Purchase
+  + sell(player: Player, share: Share): Sale
+  + advance(): void
+}
+
+Player "1" *-- "1" Portfolio : owns
+Player "1" *-- "1" TransactionArchive : records
+Portfolio "1" *-- "0..*" Share : contains
+Share "0..*" --> "1" Stock : references
+Exchange "1" o-- "0..*" Stock : provides
+TransactionArchive "1" *-- "0..*" Transaction : stores
+Transaction "1" --> "1" Share : involves
+Purchase --|> Transaction
+Sale --|> Transaction
+
+@enduml

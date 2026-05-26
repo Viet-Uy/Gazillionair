@@ -1,0 +1,51 @@
+@startuml
+title Activity Diagram - Sell Shares
+
+start
+
+partition Player {
+  :Open portfolio view;
+}
+
+partition System {
+  :Load and display portfolio holdings;
+}
+
+partition Player {
+  :Select stock holding;
+}
+
+partition System {
+  :Display holding details and current price;
+}
+
+partition Player {
+  :Enter quantity to sell;
+  :Click sell;
+}
+
+partition System {
+  :Validate selected holding and quantity;
+
+  if (Input valid?) then (yes)
+    :Check owned shares;
+
+    if (Enough shares?) then (yes)
+      :Calculate sale value;
+      :Subtract fees or commission;
+      :Create sale transaction;
+      :Update portfolio;
+      :Update cash balance;
+      :Add transaction to history;
+      :Show sale confirmation;
+    else (no)
+      :Show insufficient shares error;
+    endif
+  else (no)
+    :Show invalid input error;
+  endif
+}
+
+stop
+
+@enduml

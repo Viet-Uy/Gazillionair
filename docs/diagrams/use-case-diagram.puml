@@ -1,0 +1,33 @@
+@startuml
+left to right direction
+
+actor Player
+actor "CSV File/Data Source" as DataSource
+
+rectangle "Stock Game" {
+  usecase "View market" as UC_ViewMarket
+  usecase "View stock details" as UC_ViewStockDetails
+  usecase "Buy shares" as UC_BuyShares
+  usecase "Sell shares" as UC_SellShares
+  usecase "View portfolio" as UC_ViewPortfolio
+  usecase "View transaction history" as UC_ViewTransactionHistory
+  usecase "View market news" as UC_ViewMarketNews
+  usecase "Load stock data" as UC_LoadStockData
+}
+
+Player --> UC_ViewMarket
+Player --> UC_ViewStockDetails
+Player --> UC_BuyShares
+Player --> UC_SellShares
+Player --> UC_ViewPortfolio
+Player --> UC_ViewTransactionHistory
+Player --> UC_ViewMarketNews
+
+DataSource --> UC_LoadStockData
+
+UC_BuyShares ..> UC_ViewStockDetails : <<include>>
+UC_SellShares ..> UC_ViewPortfolio : <<include>>
+
+UC_LoadStockData ..> UC_ViewMarket : <<include>>
+
+@enduml
